@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>मन्त्र जप काउन्टर — विधि चक्र</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;900&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#060300;font-family:'Noto Sans Devanagari',serif;overflow-x:hidden;}
+input,textarea,button,select{font-family:'Noto Sans Devanagari',serif;outline:none;}
+input[type=range]{width:100%;cursor:pointer;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:4px;}
+
+/* ── Setup ── */
+#setup{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 18px 70px;overflow-y:auto;}
+.card{width:100%;max-width:440px;border-radius:18px;padding:24px 20px;display:flex;flex-direction:column;gap:20px;}
+.field-label{display:block;font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;font-weight:600;}
+.inp{width:100%;border-radius:10px;padding:11px 13px;font-size:16px;border-width:1px;border-style:solid;}
+textarea.inp{resize:vertical;line-height:1.75;font-size:18px;}
+.preset-btn{border-radius:20px;padding:4px 13px;font-size:12px;cursor:pointer;border-width:1px;border-style:solid;transition:all 0.2s;background:transparent;}
+.count-btn{border-radius:20px;padding:8px 18px;font-size:15px;font-weight:600;cursor:pointer;border-width:1px;border-style:solid;transition:all 0.2s;background:transparent;}
+.theme-dot{width:34px;height:34px;border-radius:50%;cursor:pointer;border-width:2.5px;border-style:solid;transition:all 0.2s;}
+.mode-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;cursor:pointer;border-width:1px;border-style:solid;transition:all 0.2s;}
+.radio-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0;border-width:2px;border-style:solid;transition:all 0.2s;}
+.sz-btn{flex:1;padding:10px 0;border-radius:12px;font-weight:700;cursor:pointer;border-width:1px;border-style:solid;transition:all 0.2s;background:transparent;}
+.img-thumb{position:relative;width:68px;height:68px;border-radius:10px;overflow:hidden;border-width:1px;border-style:solid;flex-shrink:0;}
+.img-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.del-btn{position:absolute;inset:0;background:rgba(0,0,0,0.62);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity 0.2s;font-size:20px;color:#FF6B6B;}
+.img-thumb:hover .del-btn{opacity:1;}
+.add-btn{width:68px;height:68px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:26px;border-width:1px;border-style:dashed;flex-shrink:0;}
+.toggle-track{width:46px;height:26px;border-radius:13px;cursor:pointer;position:relative;transition:all 0.3s;border-width:1px;border-style:solid;flex-shrink:0;}
+.toggle-thumb{position:absolute;top:3px;width:18px;height:18px;border-radius:50%;transition:all 0.3s;}
+.go-btn{border:none;border-radius:40px;padding:16px;font-size:18px;font-weight:700;cursor:pointer;letter-spacing:1px;transition:all 0.3s;width:100%;}
+.upload-zone{border-radius:12px;padding:18px 14px;text-align:center;cursor:pointer;border-width:1px;border-style:dashed;}
+.wm-zone{border-radius:10px;text-align:center;cursor:pointer;border-width:1px;border-style:dashed;overflow:hidden;}
+
+/* ── Counter ── */
+#counter{width:100%;min-height:100vh;position:relative;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;user-select:none;}
+#bg-img-prev,#bg-img-curr{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;transition:opacity 0.5s ease;pointer-events:none;}
+#gradient{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(6,3,0,0.06) 0%,rgba(6,3,0,0.08) 40%,rgba(6,3,0,0.72) 65%,rgba(6,3,0,0.97) 100%);pointer-events:none;}
+#watermark{position:absolute;z-index:10;pointer-events:none;display:flex;align-items:center;gap:7px;padding:5px 11px;background:rgba(0,0,0,0.42);border-radius:20px;backdrop-filter:blur(8px);border-width:1px;border-style:solid;}
+#img-dots{position:absolute;top:14px;left:0;right:0;display:flex;justify-content:center;gap:5px;z-index:5;pointer-events:none;}
+.img-dot{height:5px;border-radius:3px;transition:width 0.4s,background 0.4s;}
+#rec-ind{position:absolute;top:14px;left:14px;z-index:11;display:none;align-items:center;gap:6px;background:rgba(0,0,0,0.45);border-radius:20px;padding:5px 12px;pointer-events:none;}
+#rec-dot{width:8px;height:8px;border-radius:50%;background:#FF3B30;}
+#countdown-overlay{position:absolute;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(6,3,0,0.55);pointer-events:none;}
+#cd-num{font-size:130px;font-weight:900;line-height:1;}
+#cd-hint{font-size:14px;letter-spacing:4px;margin-top:12px;}
+#ui-bottom{position:absolute;bottom:0;left:0;right:0;z-index:5;text-align:center;padding:0 20px 20px;display:flex;flex-direction:column;align-items:center;}
+#om-sym{font-size:40px;line-height:1;margin-bottom:4px;}
+#deity-lbl{font-size:11px;letter-spacing:5px;margin-bottom:6px;text-transform:uppercase;}
+#mantra-wrap{margin-bottom:16px;width:100%;min-height:60px;display:flex;align-items:center;justify-content:center;}
+#ring-wrap{display:inline-block;position:relative;margin-bottom:6px;}
+#ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+#counter-num{font-weight:900;line-height:1;}
+#counter-denom{font-size:16px;margin-top:2px;}
+#counter-jap{font-size:10px;letter-spacing:3px;margin-top:3px;}
+#mala-lbl{font-size:14px;letter-spacing:4px;margin-bottom:4px;font-weight:700;}
+#tap-hint{font-size:11px;letter-spacing:3px;margin-top:4px;}
+#controls{margin-top:10px;display:none;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;}
+#play-btn{border-radius:30px;padding:9px 26px;font-size:18px;font-weight:700;border-width:1px;border-style:solid;cursor:pointer;}
+#reset-btn,#settings-btn{background:transparent;border-radius:50%;width:42px;height:42px;font-size:18px;cursor:pointer;border-width:1px;border-style:solid;}
+#rec-btn{background:rgba(255,59,48,0.12);color:#FF6B6B;border:1px solid rgba(255,59,48,0.45);border-radius:30px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:1px;}
+#petals{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden;}
+.petal{position:absolute;border-radius:50% 50% 50% 0;top:-20px;}
+
+/* ── Animations ── */
+@keyframes rec-pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+@keyframes ring-float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+@keyframes om-breathe-anim{0%,100%{transform:scale(1) translateY(0);}50%{transform:scale(1.08) translateY(-5px);}}
+@keyframes ctrl-in{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+@keyframes petal-fall{0%{transform:translateY(-10px) rotate(0);opacity:.85;}100%{transform:translateY(108vh) rotate(380deg);opacity:0;}}
+@keyframes burst-ring{0%{transform:translate(-50%,-50%) scale(.7);opacity:1;}100%{transform:translate(-50%,-50%) scale(3.2);opacity:0;}}
+@keyframes num-pop{0%{transform:scale(1.5);opacity:.3;}65%{transform:scale(.95);}100%{transform:scale(1);opacity:1;}}
+@keyframes word-slam{0%{transform:scale(0.4) translateY(30px);opacity:0;filter:blur(8px);}50%{filter:blur(0);}70%{transform:scale(1.08) translateY(-4px);}100%{transform:scale(1) translateY(0);opacity:1;}}
+@keyframes full-pop{0%{transform:scale(0.88);opacity:.3;}60%{transform:scale(1.04);}100%{transform:scale(1);opacity:1;}}
+@keyframes build-new{0%{transform:scale(0.5);opacity:0;}70%{transform:scale(1.06);}100%{transform:scale(1);opacity:1;}}
+@keyframes cd-pop{0%{transform:scale(1.6);opacity:0;}40%{opacity:1;}80%{transform:scale(1);}100%{transform:scale(.85);opacity:0;}}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ SETUP ═══════════════════════════════ -->
+<div id="setup"></div>
+
+<!-- ══════════════════════════════ COUNTER ══════════════════════════════ -->
+<div id="counter" style="display:none;">
+  <img id="bg-img-prev" alt="" style="opacity:0;"/>
+  <img id="bg-img-curr" alt="" style="opacity:0;"/>
+  <div id="gradient"></div>
+  <div id="watermark"></div>
+  <div id="img-dots"></div>
+  <div id="rec-ind"><div id="rec-dot" style="animation:rec-pulse 1.2s ease-in-out infinite;"></div><span style="color:rgba(255,255,255,0.7);font-size:11px;font-family:monospace;letter-spacing:1px;">REC</span></div>
+  <div id="countdown-overlay"><div id="cd-num"></div><div id="cd-hint">START YOUR SCREEN RECORDER NOW</div></div>
+  <div id="petals"></div>
+  <div id="ui-bottom">
+    <div id="om-sym">ॐ</div>
+    <div id="deity-lbl" style="display:none;"></div>
+    <div id="mantra-wrap"></div>
+    <div id="ring-wrap">
+      <svg id="ring-svg" style="overflow:visible;"></svg>
+      <div id="ring-center">
+        <div id="counter-num"></div>
+        <div id="counter-denom"></div>
+        <div id="counter-jap"></div>
+      </div>
+    </div>
+    <div id="mala-lbl" style="display:none;"></div>
+    <div id="tap-hint"></div>
+    <div id="controls">
+      <div id="play-btn">▶</div>
+      <button id="reset-btn" onclick="resetCounter(event)">↺</button>
+      <button id="rec-btn" onclick="startRecMode(event)">⏺ REC</button>
+      <button id="settings-btn" onclick="goBack(event)">⚙</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// GLOBAL STATE
+// ══════════════════════════════════════════════════════════════════════════════
+const THEMES = [
+  {id:"gold",    label:"Gold",    p:"#FFD700", s:"#FF8C00"},
+  {id:"white",   label:"White",   p:"#FFFFFF", s:"#E0E0E0"},
+  {id:"saffron", label:"Saffron", p:"#FF6B00", s:"#FF3D00"},
+  {id:"rose",    label:"Rose",    p:"#FF6EB4", s:"#FF1493"},
+  {id:"sky",     label:"Sky",     p:"#00CFFF", s:"#0090FF"},
+  {id:"emerald", label:"Emerald", p:"#00E888", s:"#00B860"},
+  {id:"silver",  label:"Silver",  p:"#C0C8D8", s:"#8899AA"},
+  {id:"custom",  label:"Custom",  p:"#FFD700", s:"#FF8C00"},
+];
+const TEXT_MODES = [
+  {id:"word",  label:"Word by Word",  desc:"Each word slams in — max engagement 🔥"},
+  {id:"build", label:"Build Up",      desc:"Words appear one by one then reset"},
+  {id:"full",  label:"Full Mantra",   desc:"Whole mantra glows each chant"},
+];
+const FONT_SIZES = [
+  {id:"sm", label:"S", counter:44, mantra:18},
+  {id:"md", label:"M", counter:58, mantra:24},
+  {id:"lg", label:"L", counter:72, mantra:32},
+  {id:"xl", label:"XL",counter:88, mantra:42},
+];
+const PRESETS = [
+  {label:"गणेश",   mantra:"ॐ गं गणपतये नमः"},
+  {label:"शिव",    mantra:"ॐ नमः शिवाय"},
+  {label:"शक्ति", mantra:"ॐ ऐं ह्रीं क्लीं चामुण्डायै विच्चे"},
+  {label:"विष्णु",mantra:"ॐ नमो भगवते वासुदेवाय"},
+  {label:"सरस्वती",mantra:"ॐ ऐं सरस्वत्यै नमः"},
+  {label:"लक्ष्मी",mantra:"ॐ श्रीं ह्रीं श्रीं महालक्ष्म्यै नमः"},
+  {label:"राम",    mantra:"ॐ श्री राम जय राम जय जय राम"},
+  {label:"कृष्ण", mantra:"ॐ क्लीं कृष्णाय नमः"},
+  {label:"दुर्गा",mantra:"ॐ दुं दुर्गायै नमः"},
+  {label:"हनुमान",mantra:"ॐ हं हनुमते नमः"},
+];
+const WM_POS = [{id:"tl",label:"↖"},{id:"tr",label:"↗"},{id:"bl",label:"↙"},{id:"br",label:"↘"}];
+const L = {
+  ne:{title:"मन्त्र जप काउन्टर",sub:"सनातन धर्म टक",deity:"देवता",deityPh:"जस्तै: श्री गणेश...",mantra:"मन्त्र",mantraPh:"मन्त्र यहाँ टाइप गर्नुस्...",presets:"छिटो छनोट",images:"देवताको फोटोहरू",imageHint:"फोटोहरू छान्नुस् (एक वा बढी)",logo:"विधि चक्र लोगो",logoHint:"लोगो अपलोड गर्नुस्",count:"जप संख्या",custom:"अन्य संख्या...",japSpeed:"जप गति",imgSpeed:"फोटो गति",colorTheme:"रंग थिम",textMode:"टेक्स्ट प्रकार",fontSize:"अक्षर आकार",start:"जप सुरु गर्नुस् ✦",enterMantra:"मन्त्र लेख्नुस्...",jap:"जप",mala:"माला",tapHint:"छुनुस्",autoStart:"AUTO-START",autoHint:"खुलेसँगै सुरु हुन्छ",wmPos:"लोगो स्थान"},
+  hi:{title:"मंत्र जप काउंटर",sub:"सनातन धर्म टॉक",deity:"देवता",deityPh:"जैसे: श्री गणेश...",mantra:"मंत्र",mantraPh:"मंत्र यहाँ लिखें...",presets:"त्वरित चयन",images:"देवता की छवियाँ",imageHint:"फ़ोटो अपलोड करें",logo:"विधि चक्र लोगो",logoHint:"लोगो अपलोड करें",count:"जप संख्या",custom:"अन्य संख्या...",japSpeed:"जप गति",imgSpeed:"छवि गति",colorTheme:"रंग थीम",textMode:"टेक्स्ट प्रकार",fontSize:"फ़ॉन्ट आकार",start:"जप आरंभ करें ✦",enterMantra:"मंत्र दर्ज करें...",jap:"जप",mala:"माला",tapHint:"छुएं",autoStart:"AUTO-START",autoHint:"खुलते ही शुरू होगा",wmPos:"लोगो स्थान"},
+};
+
+// Setup state
+let sLang="ne", sMantra="", sDeity="", sCount=11, sCustom="", sImages=[], sLogoSrc=null;
+let sWmPos="tr", sSpeed=5, sImgInt=6, sAuto=true, sThemeId="gold", sCustomClr="#FFD700";
+let sTextMode="word", sFontSize="lg";
+
+// Counter state
+let cRunning=false, cN=0, cMalas=0, cImgIdx=0, cPrevIdx=null, cCountdown=null;
+let japTimer=null, imgTimer=null, cdTimer=null, ctrlTimer=null, wordTimer=null, buildTimer=null;
+let cWords=[], cWordIdx=0, cShown=1;
+let ctrlVisible=false;
+
+// ══════════════════════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════════════════════
+function hex2rgb(h){return{r:parseInt(h.slice(1,3),16),g:parseInt(h.slice(3,5),16),b:parseInt(h.slice(5,7),16)};}
+function glowC(h,a=0.65){const{r,g,b}=hex2rgb(h);return`rgba(${r},${g},${b},${a})`;}
+function darkC(h,f=0.6){const{r,g,b}=hex2rgb(h);return`rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b*f)})`;}
+function getTheme(){
+  const base=THEMES.find(t=>t.id===sThemeId)||THEMES[0];
+  if(sThemeId==="custom") return{...base,p:sCustomClr,s:darkC(sCustomClr,0.75)};
+  return base;
+}
+function getFS(){return FONT_SIZES.find(f=>f.id===sFontSize)||FONT_SIZES[1];}
+function el(id){return document.getElementById(id);}
+function b64(file){return new Promise(r=>{const x=new FileReader();x.onload=e=>r(e.target.result);x.readAsDataURL(file);});}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SETUP RENDER
+// ══════════════════════════════════════════════════════════════════════════════
+function renderSetup(){
+  const t=getTheme(), P=t.p, S=t.s, lang=L[sLang];
+  const G=glowC(P), DG=glowC(P,0.18), LG=glowC(P,0.1), FG=glowC(P,0.04);
+  const PL=glowC(P,0.45), PM=glowC(P,0.3), PD=glowC(P,0.2);
+
+  el("setup").innerHTML=`
+  <div style="display:flex;gap:0;margin-bottom:22px;border-radius:30px;overflow:hidden;border:1px solid ${glowC(P,0.25)}">
+    <button onclick="setLang('ne')" style="background:${sLang==='ne'?glowC(P,0.2):'transparent'};color:${sLang==='ne'?P:glowC(P,0.38)};border:none;padding:8px 24px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:${sLang==='ne'?700:400}">नेपाली</button>
+    <button onclick="setLang('hi')" style="background:${sLang==='hi'?glowC(P,0.2):'transparent'};color:${sLang==='hi'?P:glowC(P,0.38)};border:none;padding:8px 24px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:${sLang==='hi'?700:400}">हिन्दी</button>
+  </div>
+  <div style="text-align:center;margin-bottom:22px">
+    <div style="font-size:46px;color:${P};line-height:1;margin-bottom:4px;text-shadow:0 0 20px ${G}">ॐ</div>
+    <div style="color:${P};font-size:18px;font-weight:700">${lang.title}</div>
+    <div style="color:${PM};font-size:10px;letter-spacing:4px;margin-top:3px">${lang.sub}</div>
+  </div>
+  <div class="card" style="background:${glowC(P,0.025)};border-color:${LG}">
+
+    <!-- COLOR -->
+    <div>
+      <label class="field-label" style="color:${PL}">${lang.colorTheme}</label>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:${sThemeId==='custom'?12:0}px">
+        ${THEMES.map(th=>`
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer" onclick="setTheme('${th.id}')">
+            <div class="theme-dot" style="background:${th.id==='custom'?'conic-gradient(red,orange,yellow,green,cyan,blue,violet,red)':`linear-gradient(135deg,${th.p},${th.s})`};border-color:${sThemeId===th.id?'#fff':'transparent'};box-shadow:${sThemeId===th.id?`0 0 10px ${glowC(th.p||'#fff',0.6)}`:'none'}"></div>
+            <span style="color:${sThemeId===th.id?'#fff':glowC(P,0.4)};font-size:9px;letter-spacing:1px">${th.label.toUpperCase()}</span>
+          </div>
+        `).join('')}
+      </div>
+      ${sThemeId==='custom'?`<div style="display:flex;align-items:center;gap:12px">
+        <input type="color" value="${sCustomClr}" oninput="setCustomClr(this.value)" style="width:48px;height:36px;border:none;border-radius:8px;cursor:pointer;background:transparent;padding:2px"/>
+        <div><div style="color:${sCustomClr};font-size:14px;font-weight:600">${sCustomClr.toUpperCase()}</div><div style="color:rgba(255,255,255,0.3);font-size:11px">Pick any color</div></div>
+      </div>`:''}
+    </div>
+
+    <!-- TEXT MODE -->
+    <div>
+      <label class="field-label" style="color:${PL}">${lang.textMode}</label>
+      ${TEXT_MODES.map(m=>`
+        <div class="mode-row" style="background:${sTextMode===m.id?glowC(P,0.12):'transparent'};border-color:${sTextMode===m.id?glowC(P,0.5):glowC(P,0.12)};margin-bottom:8px" onclick="setTextMode('${m.id}')">
+          <div class="radio-dot" style="border-color:${sTextMode===m.id?P:glowC(P,0.3)};background:${sTextMode===m.id?P:'transparent'}"></div>
+          <div>
+            <div style="color:${sTextMode===m.id?P:glowC(P,0.55)};font-size:13px;font-weight:700">${m.label}${m.id==='word'?' <span style="font-size:10px;background:'+glowC(P,0.1)+';padding:2px 8px;border-radius:10px;margin-left:6px">🔥 Best</span>':''}</div>
+            <div style="color:${PM};font-size:11px;margin-top:2px">${m.desc}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- FONT SIZE -->
+    <div>
+      <label class="field-label" style="color:${PL}">${lang.fontSize}</label>
+      <div style="display:flex;gap:8px">
+        ${FONT_SIZES.map(f=>`<button class="sz-btn" onclick="setFontSize('${f.id}')" style="color:${sFontSize===f.id?P:glowC(P,0.4)};border-color:${sFontSize===f.id?glowC(P,0.55):glowC(P,0.15)};background:${sFontSize===f.id?glowC(P,0.2):'transparent'};font-size:${f.id==='sm'?13:f.id==='md'?16:f.id==='lg'?19:23}px">${f.label}</button>`).join('')}
+      </div>
+    </div>
+
+    <!-- DEITY -->
+    <div>
+      <label class="field-label" style="color:${PL}">${lang.deity}</label>
+      <input class="inp" id="inp-deity" value="${sDeity}" placeholder="${lang.deityPh}" oninput="sDeity=this.value"
+        style="background:${FG};border-color:${DG};color:${P}"/>
+    </div>
+
+    <!-- MANTRA -->
+    <div>
+      <label class="field-label" style="color:${PL}">${lang.mantra} <span style="color:#FF6B6B">*</span></label>
+      <textarea class="inp" id="inp-mantra" placeholder="${lang.mantraPh}" oninput="sMantra=this.value;updateGoBtn()"
+        style="background:${FG};border-color:${DG};color:${P}">${sMantra}</textarea>
+      <div style="margin-top:9px">
+        <div style="color:${PM};font-size:10px;letter-spacing:3px;margin-bottom:7px">${lang.presets}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${PRESETS.map(p=>`<button class="preset-btn" onclick="setPreset('${p.mantra.replace(/'/g,"\\'")}',this)"
+            style="color:${sMantra===p.mantra?P:glowC(P,0.45)};border-color:${sMantra===p.mantra?glowC(P,0.55):glowC(P,0.15)};background:${sMantra===p.mantra?glowC(P,0.18):'transparent'}">${p.label}</button>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- IMAGES -->
+    <div>
+      <label class="field-label" style="color:${PL}">${lang.images}</label>
+      <div class="upload-zone" style="border-color:${glowC(P,0.28)};background:${glowC(P,0.02)};margin-bottom:${sImages.length?12:0}px" onclick="el('file-imgs').click()">
+        <div style="font-size:24px;margin-bottom:5px">🖼️</div>
+        <div style="color:${glowC(P,0.5)};font-size:13px">${lang.imageHint}</div>
+        <div style="color:${glowC(P,0.25)};font-size:11px;margin-top:3px">JPG · PNG · WEBP — multiple ok</div>
+      </div>
+      <input type="file" id="file-imgs" accept="image/*" multiple style="display:none" onchange="addImages(this)"/>
+      <div id="thumbs-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:${sImages.length?8:0}px">
+        ${sImages.map((src,i)=>`
+          <div class="img-thumb" style="border-color:${glowC(P,0.3)}">
+            <img src="${src}" alt=""/>
+            <div class="del-btn" onclick="removeImg(${i})">✕</div>
+            <div style="position:absolute;bottom:3px;left:0;right:0;text-align:center;font-size:10px;color:${glowC(P,0.8)}">${i+1}</div>
+          </div>`).join('')}
+        ${sImages.length?`<div class="add-btn" style="border-color:${glowC(P,0.25)};color:${glowC(P,0.4)}" onclick="el('file-imgs').click()">+</div>`:''}
+      </div>
+      ${sImages.length>1?`<div>
+        <div style="color:${PL};font-size:10px;letter-spacing:3px;margin-bottom:6px">${lang.imgSpeed} — <span id="imgint-lbl" style="color:${P}">${sImgInt}s</span></div>
+        <input type="range" min="3" max="30" step="1" value="${sImgInt}" oninput="sImgInt=+this.value;el('imgint-lbl').textContent=sImgInt+'s'" style="accent-color:${P}"/>
+        <div style="display:flex;justify-content:space-between;color:${PM};font-size:11px;margin-top:4px"><span>⚡3s</span><span>🕉30s</span></div>
+      </div>`:''}
+    </div>
+
+    <!-- WATERMARK -->
+    <div style="border-top:1px solid ${glowC(P,0.1)};padding-top:18px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;color:${P};font-size:13px;font-weight:700;letter-spacing:1px">🔯 विधि चक्र Watermark</div>
+      <label class="field-label" style="color:${PL}">${lang.logo}</label>
+      <div class="wm-zone" style="border-color:${glowC(P,0.28)};background:${glowC(P,0.02)};padding:${sLogoSrc?0:16}px ${sLogoSrc?0:14}px;margin-bottom:10px" onclick="el('file-logo').click()">
+        ${sLogoSrc
+          ?`<div style="position:relative"><img src="${sLogoSrc}" style="height:56px;object-fit:contain;display:block;margin:12px auto"/><div style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.7);border-radius:12px;padding:2px 10px;color:${glowC(P,0.75)};font-size:10px">tap to change</div></div>`
+          :`<div style="font-size:22px;margin-bottom:5px">🔯</div><div style="color:${glowC(P,0.45)};font-size:12px">${lang.logoHint}</div><div style="color:${PM};font-size:11px;margin-top:6px;border:1px solid ${PD};border-radius:20px;padding:5px 12px;display:inline-block">or use default text badge</div>`}
+      </div>
+      <input type="file" id="file-logo" accept="image/*" style="display:none" onchange="setLogo(this)"/>
+      <label class="field-label" style="color:${PL};margin-top:12px">${lang.wmPos}</label>
+      <div style="display:flex;gap:8px">
+        ${WM_POS.map(p=>`<button onclick="sWmPos='${p.id}';renderSetup()" style="flex:1;padding:8px 0;border-radius:10px;background:${sWmPos===p.id?glowC(P,0.18):'transparent'};color:${sWmPos===p.id?P:glowC(P,0.4)};border:1px solid ${sWmPos===p.id?glowC(P,0.55):glowC(P,0.15)};font-size:16px;cursor:pointer">${p.label}</button>`).join('')}
+      </div>
+    </div>
+
+    <!-- COUNT -->
+    <div>
+      <label class="field-label" style="color:${PL}">${lang.count}</label>
+      <div style="display:flex;gap:7px;margin-bottom:9px;flex-wrap:wrap">
+        ${[11,21,51,108].map(n=>`<button class="count-btn" onclick="setCount(${n})" style="color:${sCount===n&&!sCustom?P:glowC(P,0.4)};border-color:${sCount===n&&!sCustom?glowC(P,0.55):glowC(P,0.15)};background:${sCount===n&&!sCustom?glowC(P,0.18):'transparent'}">${n}</button>`).join('')}
+      </div>
+      <input class="inp" type="number" id="inp-custom" value="${sCustom}" placeholder="${lang.custom}" oninput="sCustom=this.value;renderSetup()"
+        style="background:${FG};border-color:${DG};color:${P};font-size:15px"/>
+    </div>
+
+    <!-- JAP SPEED -->
+    <div>
+      <label class="field-label" style="color:${PL}">${lang.japSpeed} — <span id="speed-lbl" style="color:${P}">${sSpeed}s per jap</span></label>
+      <input type="range" min="2" max="15" step="1" value="${sSpeed}" oninput="sSpeed=+this.value;el('speed-lbl').textContent=sSpeed+'s per jap'" style="accent-color:${P}"/>
+      <div style="display:flex;justify-content:space-between;color:${PM};font-size:11px;margin-top:4px"><span>⚡2s</span><span>🕉15s</span></div>
+    </div>
+
+    <!-- AUTO START -->
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="color:${PL};font-size:10px;letter-spacing:3px">${lang.autoStart}</div>
+        <div style="color:${glowC(P,0.25)};font-size:11px;margin-top:3px">${lang.autoHint}</div>
+      </div>
+      <div class="toggle-track" style="background:${sAuto?glowC(P,0.3):glowC(P,0.08)};border-color:${sAuto?glowC(P,0.6):glowC(P,0.2)}" onclick="sAuto=!sAuto;renderSetup()">
+        <div class="toggle-thumb" style="left:${sAuto?23:3}px;background:${sAuto?P:'rgba(255,255,255,0.2)'};box-shadow:${sAuto?`0 0 8px ${glowC(P,0.8)}`:'none'}"></div>
+      </div>
+    </div>
+
+    <!-- GO -->
+    <button id="go-btn" class="go-btn" onclick="startCounter()"
+      style="background:${sMantra.trim()?`linear-gradient(135deg,${darkC(P)},${P},${darkC(P)})`:'rgba(255,255,255,0.06)'};color:${sMantra.trim()?'#0d0800':'rgba(255,255,255,0.2)'};cursor:${sMantra.trim()?'pointer':'not-allowed'};box-shadow:${sMantra.trim()?`0 0 40px ${glowC(P,0.3)}`:'none'}">
+      ${sMantra.trim()?lang.start:lang.enterMantra}
+    </button>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SETUP ACTIONS
+// ══════════════════════════════════════════════════════════════════════════════
+function setLang(l){sLang=l;renderSetup();}
+function setTheme(id){sThemeId=id;renderSetup();}
+function setCustomClr(v){sCustomClr=v;renderSetup();}
+function setTextMode(m){sTextMode=m;renderSetup();}
+function setFontSize(s){sFontSize=s;renderSetup();}
+function setCount(n){sCount=n;sCustom='';renderSetup();}
+function setPreset(m){sMantra=m;el('inp-mantra').value=m;renderSetup();}
+function updateGoBtn(){sMantra=el('inp-mantra').value;renderSetup();}
+async function addImages(inp){
+  const files=Array.from(inp.files);
+  const results=await Promise.all(files.map(b64));
+  sImages=[...sImages,...results];
+  renderSetup();
+}
+function removeImg(i){sImages=sImages.filter((_,j)=>j!==i);renderSetup();}
+async function setLogo(inp){
+  if(inp.files[0]){sLogoSrc=await b64(inp.files[0]);renderSetup();}
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// START COUNTER
+// ══════════════════════════════════════════════════════════════════════════════
+function startCounter(){
+  if(!sMantra.trim())return;
+  sDeity=el('inp-deity')?.value||sDeity;
+  sMantra=el('inp-mantra')?.value||sMantra;
+  const n=sCustom&&parseInt(sCustom)>0?parseInt(sCustom):sCount;
+
+  // Reset state
+  cRunning=false; cN=0; cMalas=0; cImgIdx=0; cPrevIdx=null; cCountdown=null;
+  cWords=sMantra.split(/\s+/).filter(Boolean);
+  cWordIdx=0; cShown=1;
+  clearAllTimers();
+
+  el("setup").style.display="none";
+  el("counter").style.display="flex";
+  applyThemeToCounter();
+  renderCounterUI();
+
+  if(sAuto){setRunning(true);}
+  else{showControls();}
+}
+
+function applyThemeToCounter(){
+  const t=getTheme(), P=t.p, S=t.s, lang=L[sLang];
+  const fs=getFS();
+  // Om
+  el('om-sym').style.color=P;
+  el('om-sym').style.filter=`drop-shadow(0 0 16px ${glowC(P,0.8)})`;
+  el('om-sym').style.animation='om-breathe-anim 4s ease-in-out infinite';
+  // Deity
+  if(sDeity){el('deity-lbl').style.display='block';el('deity-lbl').textContent=sDeity;el('deity-lbl').style.color=glowC(P,0.6);}
+  // Ring animation
+  el('ring-wrap').style.animation='ring-float 3.5s ease-in-out infinite';
+  // counter num
+  el('counter-num').style.fontSize=fs.counter+'px';
+  el('counter-num').style.color=P;
+  el('counter-num').style.textShadow=`0 0 28px ${glowC(P,0.95)},0 0 60px ${glowC(P,0.45)},0 2px 12px rgba(0,0,0,0.95)`;
+  el('counter-denom').style.color=glowC(P,0.55);
+  el('counter-jap').style.color=glowC(P,0.3);
+  el('counter-jap').textContent=lang.jap;
+  el('tap-hint').style.color=glowC(P,0.28);
+  el('tap-hint').textContent=lang.tapHint;
+  // Mala
+  el('mala-lbl').style.color=S;
+  el('mala-lbl').style.textShadow=`0 0 14px ${glowC(S,0.7)}`;
+  // Controls
+  el('play-btn').style.borderColor=glowC(P,0.4);
+  el('reset-btn').style.borderColor=glowC(P,0.22);
+  el('reset-btn').style.color=glowC(P,0.45);
+  el('settings-btn').style.borderColor=glowC(P,0.14);
+  el('settings-btn').style.color=glowC(P,0.3);
+  // Gradient
+  el('gradient').style.background='linear-gradient(to bottom,rgba(6,3,0,0.06) 0%,rgba(6,3,0,0.08) 40%,rgba(6,3,0,0.72) 65%,rgba(6,3,0,0.97) 100%)';
+  // Watermark
+  renderWatermark(P);
+  // bg images
+  if(sImages.length>0){el('bg-img-curr').src=sImages[0];el('bg-img-curr').style.opacity='0.82';}
+  renderImgDots();
+  // inject CSS for this theme
+  let style=document.getElementById('counter-css');
+  if(!style){style=document.createElement('style');style.id='counter-css';document.head.appendChild(style);}
+  style.textContent=`
+    @keyframes glow-pulse-c{0%,100%{text-shadow:0 0 18px ${P},0 0 45px ${glowC(P,0.5)};}50%{text-shadow:0 0 36px ${P},0 0 90px ${glowC(P,0.8)};}}
+    @keyframes om-breathe-anim{0%,100%{filter:drop-shadow(0 0 16px ${glowC(P,0.8)});transform:scale(1) translateY(0);}50%{filter:drop-shadow(0 0 34px ${P});transform:scale(1.08) translateY(-5px);}}
+  `;
+}
+
+function renderWatermark(P){
+  const wm=el('watermark');
+  const pos={tl:{top:'14px',left:'14px'},tr:{top:'14px',right:'14px'},bl:{bottom:'80px',left:'14px'},br:{bottom:'80px',right:'14px'}}[sWmPos]||{top:'14px',right:'14px'};
+  Object.assign(wm.style,{top:'',left:'',right:'',bottom:'',...pos,borderColor:glowC(P,0.3)});
+  wm.innerHTML=sLogoSrc
+    ?`<img src="${sLogoSrc}" style="height:26px;width:auto;max-width:90px;object-fit:contain"/>`
+    :`<span style="font-size:14px">🔯</span><div style="line-height:1"><div style="color:${P};font-size:11px;font-weight:700;letter-spacing:1px;font-family:inherit">विधि चक्र</div><div style="color:${glowC(P,0.55)};font-size:8px;letter-spacing:2px;font-family:monospace">VIDHI CHAKRA</div></div>`;
+}
+
+function renderImgDots(){
+  const P=getTheme().p;
+  el('img-dots').innerHTML='';
+  if(sImages.length>1){
+    sImages.forEach((_,i)=>{
+      const d=document.createElement('div');
+      d.className='img-dot';
+      d.style.width=(i===cImgIdx?20:6)+'px';
+      d.style.background=i===cImgIdx?P:glowC(P,0.3);
+      el('img-dots').appendChild(d);
+    });
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// COUNTER UI
+// ══════════════════════════════════════════════════════════════════════════════
+function renderCounterUI(){
+  const n=sCustom&&parseInt(sCustom)>0?parseInt(sCustom):sCount;
+  drawRing(cN,n);
+  el('counter-num').textContent=cN;
+  el('counter-denom').textContent='/ '+n;
+  if(cMalas>0){el('mala-lbl').style.display='block';el('mala-lbl').textContent=L[sLang].mala+' × '+cMalas+' ✦';}
+  renderMantraText(false);
+}
+
+function renderMantraText(animate){
+  const P=getTheme().p, S=getTheme().s, fs=getFS(), wrap=el('mantra-wrap');
+  const shadow=`0 2px 16px rgba(0,0,0,0.95),0 0 30px ${glowC(P,0.35)}`;
+
+  if(sTextMode==='full'){
+    wrap.innerHTML=`<div style="font-size:${fs.mantra}px;color:${P};line-height:1.65;letter-spacing:1px;font-weight:800;text-align:center;padding:0 8px;text-shadow:${shadow};${animate?'animation:full-pop 0.45s cubic-bezier(0.34,1.56,0.64,1)':''}">${sMantra}</div>`;
+  } else if(sTextMode==='word'){
+    const w=cWords[cWordIdx]||cWords[0]||'';
+    wrap.innerHTML=`<div style="font-size:${fs.mantra*1.55}px;font-weight:900;color:${P};line-height:1.2;letter-spacing:2px;text-shadow:0 0 40px ${glowC(P,0.9)},0 0 80px ${glowC(P,0.5)},0 3px 20px rgba(0,0,0,0.95);${animate?'animation:word-slam 0.35s cubic-bezier(0.34,1.56,0.64,1)':''}text-align:center;width:100%">${w}</div>`;
+  } else if(sTextMode==='build'){
+    const words=cWords;
+    wrap.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%;padding:0 12px">`+
+      words.slice(0,cShown).map((w,i)=>{
+        const isNew=i===cShown-1;
+        return `<span style="font-size:${isNew?fs.mantra*1.4:fs.mantra*0.95}px;font-weight:${isNew?900:700};color:${isNew?P:glowC(P,0.45)};letter-spacing:1px;text-shadow:${isNew?`0 0 35px ${glowC(P,0.9)},0 0 70px ${glowC(P,0.5)},0 3px 18px rgba(0,0,0,0.95)`:`0 2px 10px rgba(0,0,0,0.8)`};transition:all 0.4s;${isNew?'animation:build-new 0.35s cubic-bezier(0.34,1.56,0.64,1)':''}">${w}</span>`;
+      }).join('')+'</div>';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RING SVG
+// ══════════════════════════════════════════════════════════════════════════════
+function drawRing(current,total){
+  const P=getTheme().p, S=getTheme().s;
+  const R=78, ORB=106, DS=5.5, SZ=(ORB+DS+10)*2, C=SZ/2;
+  const circ=2*Math.PI*R, off=circ-(current/total)*circ;
+  const rsvg=el('ring-svg');
+  rsvg.setAttribute('width',SZ); rsvg.setAttribute('height',SZ);
+  rsvg.setAttribute('viewBox',`0 0 ${SZ} ${SZ}`);
+  rsvg.setAttribute('style','overflow:visible');
+
+  const dots=[...Array(total)].map((_,i)=>{
+    const a=((i/total)*360-90)*(Math.PI/180), lit=i<current;
+    const dx=C+ORB*Math.cos(a), dy=C+ORB*Math.sin(a);
+    return `<circle cx="${dx}" cy="${dy}" r="${lit?DS:DS*0.48}" fill="${lit?P:glowC(P,0.22)}" ${lit?'filter="url(#dg)"':''} style="transition:r 0.3s,fill 0.3s"/>`;
+  }).join('');
+
+  rsvg.innerHTML=`
+    <defs>
+      <linearGradient id="rG" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="${P}"/><stop offset="50%" stop-color="${S}"/><stop offset="100%" stop-color="${P}"/>
+      </linearGradient>
+      <filter id="ag" x="-25%" y="-25%" width="150%" height="150%">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="dg" x="-150%" y="-150%" width="400%" height="400%">
+        <feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="${glowC(P,0.18)}" stroke-width="10"/>
+    <circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="url(#rG)" stroke-width="10" stroke-linecap="round"
+      stroke-dasharray="${circ}" stroke-dashoffset="${off}" transform="rotate(-90 ${C} ${C})" filter="url(#ag)"
+      style="transition:stroke-dashoffset 0.55s cubic-bezier(0.4,0,0.2,1)"/>
+    ${dots}`;
+  // position center label
+  el('ring-center').style.width=SZ+'px';
+  el('ring-center').style.height=SZ+'px';
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RUNNING LOGIC
+// ══════════════════════════════════════════════════════════════════════════════
+function setRunning(val){
+  cRunning=val;
+  clearInterval(japTimer);
+  clearInterval(wordTimer);
+  clearInterval(buildTimer);
+
+  const n=sCustom&&parseInt(sCustom)>0?parseInt(sCustom):sCount;
+  const P=getTheme().p, S=getTheme().s;
+
+  if(val){
+    japTimer=setInterval(()=>{
+      cN++;
+      if(cN>=n){cN=0;cMalas++;spawnBurst();}
+      const num=el('counter-num');
+      num.style.animation='none'; num.offsetHeight;
+      num.style.animation='num-pop 0.42s cubic-bezier(0.34,1.56,0.64,1)';
+      num.textContent=cN;
+      el('counter-denom').textContent='/ '+n;
+      if(cMalas>0){el('mala-lbl').style.display='block';el('mala-lbl').textContent=L[sLang].mala+' × '+cMalas+' ✦';}
+      drawRing(cN,n);
+      cWordIdx=0; cShown=1;
+      renderMantraText(true);
+    }, sSpeed*1000);
+
+    // Word by word
+    if(sTextMode==='word'){
+      const interval=(sSpeed*1000)/cWords.length;
+      wordTimer=setInterval(()=>{cWordIdx=(cWordIdx+1)%cWords.length;renderMantraText(true);},interval);
+    }
+    // Build up
+    if(sTextMode==='build'){
+      const interval=(sSpeed*1000)/(cWords.length+1);
+      buildTimer=setInterval(()=>{
+        cShown++;
+        if(cShown>cWords.length){cShown=1;}
+        renderMantraText(true);
+      },interval);
+    }
+
+    spawnPetals();
+    el('rec-ind').style.display='flex';
+    el('tap-hint').style.display='none';
+  } else {
+    stopPetals();
+    el('rec-ind').style.display='none';
+  }
+
+  updatePlayBtn();
+}
+
+function updatePlayBtn(){
+  const P=getTheme().p, S=getTheme().s;
+  const btn=el('play-btn');
+  btn.textContent=cRunning?'⏸':'▶';
+  btn.style.background=cRunning?glowC(S,0.14):glowC(P,0.14);
+  btn.style.borderColor=cRunning?glowC(S,0.4):glowC(P,0.4);
+  btn.style.color=cRunning?S:P;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TAP / CONTROLS
+// ══════════════════════════════════════════════════════════════════════════════
+el('counter').addEventListener('click',()=>{
+  if(cCountdown!==null)return;
+  setRunning(!cRunning);
+  showControls();
+});
+el('play-btn').addEventListener('click',e=>{e.stopPropagation();setRunning(!cRunning);showControls();});
+
+function showControls(){
+  ctrlVisible=true;
+  el('controls').style.display='flex';
+  el('controls').style.animation='ctrl-in 0.3s ease-out';
+  el('tap-hint').style.display='none';
+  clearTimeout(ctrlTimer);
+  ctrlTimer=setTimeout(hideControls,3500);
+}
+function hideControls(){ctrlVisible=false;el('controls').style.display='none';if(!cRunning)el('tap-hint').style.display='block';}
+function resetCounter(e){
+  e.stopPropagation();
+  clearAllTimers();
+  cN=0;cMalas=0;cWordIdx=0;cShown=1;
+  setRunning(false);
+  const n=sCustom&&parseInt(sCustom)>0?parseInt(sCustom):sCount;
+  drawRing(0,n);
+  el('counter-num').textContent=0;
+  el('counter-denom').textContent='/ '+n;
+  el('mala-lbl').style.display='none';
+  renderMantraText(false);
+  showControls();
+}
+function goBack(e){
+  e.stopPropagation();
+  clearAllTimers();
+  setRunning(false);
+  el('counter').style.display='none';
+  el('setup').style.display='flex';
+  renderSetup();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RECORD MODE
+// ══════════════════════════════════════════════════════════════════════════════
+function startRecMode(e){
+  e.stopPropagation();
+  try{el('counter').requestFullscreen();}catch(_){}
+  hideControls();
+  clearAllTimers();
+  cRunning=false; cN=0; cMalas=0; cWordIdx=0; cShown=1;
+  const n=sCustom&&parseInt(sCustom)>0?parseInt(sCustom):sCount;
+  drawRing(0,n); el('counter-num').textContent=0; el('mala-lbl').style.display='none';
+
+  cCountdown=3;
+  const P=getTheme().p;
+  const ov=el('countdown-overlay');
+  ov.style.display='flex';
+  el('cd-num').textContent=cCountdown;
+  el('cd-num').style.color=P;
+  el('cd-num').style.textShadow=`0 0 60px ${glowC(P,0.9)}`;
+  el('cd-hint').style.color=glowC(P,0.6);
+
+  cdTimer=setInterval(()=>{
+    cCountdown--;
+    if(cCountdown<=0){
+      clearInterval(cdTimer); cdTimer=null; cCountdown=null;
+      ov.style.display='none';
+      setRunning(true);
+    } else {
+      const num=el('cd-num');
+      num.style.animation='none'; num.offsetHeight;
+      num.style.animation='cd-pop 1s ease-out forwards';
+      num.textContent=cCountdown;
+    }
+  },1000);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// IMAGE CYCLING
+// ══════════════════════════════════════════════════════════════════════════════
+function startImgCycle(){
+  if(sImages.length<=1)return;
+  imgTimer=setInterval(()=>{
+    const prev=el('bg-img-prev'), curr=el('bg-img-curr');
+    cPrevIdx=cImgIdx;
+    cImgIdx=(cImgIdx+1)%sImages.length;
+    prev.src=sImages[cPrevIdx]; prev.style.opacity='0.82';
+    setTimeout(()=>{
+      curr.src=sImages[cImgIdx];
+      curr.style.opacity='0';
+      setTimeout(()=>{curr.style.opacity='0.82'; prev.style.opacity='0';},50);
+    },100);
+    renderImgDots();
+  },sImgInt*1000);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PETALS
+// ══════════════════════════════════════════════════════════════════════════════
+let petalInterval=null, petalEls=[];
+function spawnPetals(){
+  stopPetals();
+  const P=getTheme().p, S=getTheme().s;
+  const colors=[`rgba(255,80,80,0.62)`,`rgba(255,165,0,0.6)`,glowC(P,0.55),glowC(S,0.5)];
+  petalInterval=setInterval(()=>{
+    const petal=document.createElement('div');
+    petal.className='petal';
+    const i=Math.floor(Math.random()*7);
+    const w=7+(i%3)*2, h=12+(i%3)*3;
+    petal.style.cssText=`width:${w}px;height:${h}px;left:${Math.random()*90+5}%;background:${colors[i%colors.length]};animation:petal-fall ${2.6+i*0.65}s linear forwards`;
+    el('petals').appendChild(petal);
+    petalEls.push(petal);
+    setTimeout(()=>{petal.remove();petalEls=petalEls.filter(p=>p!==petal);},(2.6+i*0.65)*1000+100);
+  },700);
+}
+function stopPetals(){clearInterval(petalInterval);petalEls.forEach(p=>p.remove());petalEls=[];}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// BURST
+// ══════════════════════════════════════════════════════════════════════════════
+function spawnBurst(){
+  const P=getTheme().p;
+  const burst=document.createElement('div');
+  burst.style.cssText=`position:absolute;top:50%;left:50%;width:280px;height:280px;border-radius:50%;border:2.5px solid ${P};box-shadow:0 0 30px ${glowC(P,0.7)};animation:burst-ring 0.8s ease-out forwards;pointer-events:none;z-index:6`;
+  el('counter').appendChild(burst);
+  setTimeout(()=>burst.remove(),900);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════════════════════════
+function clearAllTimers(){
+  clearInterval(japTimer); clearInterval(imgTimer); clearInterval(cdTimer);
+  clearInterval(wordTimer); clearInterval(buildTimer);
+  clearTimeout(ctrlTimer);
+  japTimer=imgTimer=cdTimer=wordTimer=buildTimer=null;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════════
+renderSetup();
+
+// Start image cycle when counter becomes visible (observer)
+const obs=new MutationObserver(()=>{
+  if(el('counter').style.display!=='none'){startImgCycle();}
+  else{clearInterval(imgTimer);imgTimer=null;}
+});
+obs.observe(el('counter'),{attributes:true,attributeFilter:['style']});
+</script>
+</body>
+</html>
