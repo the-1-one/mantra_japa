@@ -7,14 +7,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;900&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:#060300;font-family:'Noto Sans Devanagari',serif;overflow-x:hidden;}
-input,textarea,button,select{font-family:'Noto Sans Devanagari',serif;outline:none;}
+html,body{background:#060300;font-family:'Noto Sans Devanagari',serif;overflow-x:hidden;}
+body{min-height:100vh;}
+input,textarea,button{font-family:'Noto Sans Devanagari',serif;outline:none;}
 input[type=range]{width:100%;cursor:pointer;}
 ::-webkit-scrollbar{width:3px;}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:4px;}
-
-/* ── Setup ── */
-#setup{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 18px 70px;overflow-y:auto;}
+#setup{display:flex;flex-direction:column;align-items:center;padding:32px 18px 120px;}
 .card{width:100%;max-width:440px;border-radius:18px;padding:24px 20px;display:flex;flex-direction:column;gap:20px;}
 .field-label{display:block;font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;font-weight:600;}
 .inp{width:100%;border-radius:10px;padding:11px 13px;font-size:16px;border-width:1px;border-style:solid;}
@@ -22,7 +21,7 @@ textarea.inp{resize:vertical;line-height:1.75;font-size:18px;}
 .preset-btn{border-radius:20px;padding:4px 13px;font-size:12px;cursor:pointer;border-width:1px;border-style:solid;transition:all 0.2s;background:transparent;}
 .count-btn{border-radius:20px;padding:8px 18px;font-size:15px;font-weight:600;cursor:pointer;border-width:1px;border-style:solid;transition:all 0.2s;background:transparent;}
 .theme-dot{width:34px;height:34px;border-radius:50%;cursor:pointer;border-width:2.5px;border-style:solid;transition:all 0.2s;}
-.mode-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;cursor:pointer;border-width:1px;border-style:solid;transition:all 0.2s;}
+.mode-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;cursor:pointer;border-width:1px;border-style:solid;transition:all 0.2s;margin-bottom:8px;}
 .radio-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0;border-width:2px;border-style:solid;transition:all 0.2s;}
 .sz-btn{flex:1;padding:10px 0;border-radius:12px;font-weight:700;cursor:pointer;border-width:1px;border-style:solid;transition:all 0.2s;background:transparent;}
 .img-thumb{position:relative;width:68px;height:68px;border-radius:10px;overflow:hidden;border-width:1px;border-style:solid;flex-shrink:0;}
@@ -33,713 +32,3125 @@ textarea.inp{resize:vertical;line-height:1.75;font-size:18px;}
 .toggle-track{width:46px;height:26px;border-radius:13px;cursor:pointer;position:relative;transition:all 0.3s;border-width:1px;border-style:solid;flex-shrink:0;}
 .toggle-thumb{position:absolute;top:3px;width:18px;height:18px;border-radius:50%;transition:all 0.3s;}
 .go-btn{border:none;border-radius:40px;padding:16px;font-size:18px;font-weight:700;cursor:pointer;letter-spacing:1px;transition:all 0.3s;width:100%;}
+#sticky-bar{position:fixed;bottom:0;left:0;right:0;z-index:40;padding:12px 18px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(to top,#060300 60%,rgba(6,3,0,0.85) 85%,transparent);display:none;justify-content:center;}
+#sticky-bar button{width:100%;max-width:440px;border:none;border-radius:40px;padding:16px;font-size:18px;font-weight:800;cursor:pointer;letter-spacing:1px;font-family:'Noto Sans Devanagari',serif;}
 .upload-zone{border-radius:12px;padding:18px 14px;text-align:center;cursor:pointer;border-width:1px;border-style:dashed;}
 .wm-zone{border-radius:10px;text-align:center;cursor:pointer;border-width:1px;border-style:dashed;overflow:hidden;}
-
-/* ── Counter ── */
-#counter{width:100%;min-height:100vh;position:relative;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;user-select:none;}
-#bg-img-prev,#bg-img-curr{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;transition:opacity 0.5s ease;pointer-events:none;}
-#gradient{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(6,3,0,0.06) 0%,rgba(6,3,0,0.08) 40%,rgba(6,3,0,0.72) 65%,rgba(6,3,0,0.97) 100%);pointer-events:none;}
-#watermark{position:absolute;z-index:10;pointer-events:none;display:flex;align-items:center;gap:7px;padding:5px 11px;background:rgba(0,0,0,0.42);border-radius:20px;backdrop-filter:blur(8px);border-width:1px;border-style:solid;}
-#img-dots{position:absolute;top:14px;left:0;right:0;display:flex;justify-content:center;gap:5px;z-index:5;pointer-events:none;}
-.img-dot{height:5px;border-radius:3px;transition:width 0.4s,background 0.4s;}
-#rec-ind{position:absolute;top:14px;left:14px;z-index:11;display:none;align-items:center;gap:6px;background:rgba(0,0,0,0.45);border-radius:20px;padding:5px 12px;pointer-events:none;}
-#rec-dot{width:8px;height:8px;border-radius:50%;background:#FF3B30;}
-#countdown-overlay{position:absolute;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(6,3,0,0.55);pointer-events:none;}
-#cd-num{font-size:130px;font-weight:900;line-height:1;}
-#cd-hint{font-size:14px;letter-spacing:4px;margin-top:12px;}
-#ui-bottom{position:absolute;bottom:0;left:0;right:0;z-index:5;text-align:center;padding:0 20px 20px;display:flex;flex-direction:column;align-items:center;}
-#om-sym{font-size:40px;line-height:1;margin-bottom:4px;}
-#deity-lbl{font-size:11px;letter-spacing:5px;margin-bottom:6px;text-transform:uppercase;}
-#mantra-wrap{margin-bottom:16px;width:100%;min-height:60px;display:flex;align-items:center;justify-content:center;}
-#ring-wrap{display:inline-block;position:relative;margin-bottom:6px;}
-#ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-#counter-num{font-weight:900;line-height:1;}
-#counter-denom{font-size:16px;margin-top:2px;}
-#counter-jap{font-size:10px;letter-spacing:3px;margin-top:3px;}
-#mala-lbl{font-size:14px;letter-spacing:4px;margin-bottom:4px;font-weight:700;}
-#tap-hint{font-size:11px;letter-spacing:3px;margin-top:4px;}
-#controls{margin-top:10px;display:none;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;}
-#play-btn{border-radius:30px;padding:9px 26px;font-size:18px;font-weight:700;border-width:1px;border-style:solid;cursor:pointer;}
-#reset-btn,#settings-btn{background:transparent;border-radius:50%;width:42px;height:42px;font-size:18px;cursor:pointer;border-width:1px;border-style:solid;}
-#rec-btn{background:rgba(255,59,48,0.12);color:#FF6B6B;border:1px solid rgba(255,59,48,0.45);border-radius:30px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:1px;}
-#petals{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden;}
-.petal{position:absolute;border-radius:50% 50% 50% 0;top:-20px;}
-
-/* ── Animations ── */
-@keyframes rec-pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
-@keyframes ring-float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
-@keyframes om-breathe-anim{0%,100%{transform:scale(1) translateY(0);}50%{transform:scale(1.08) translateY(-5px);}}
-@keyframes ctrl-in{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
-@keyframes petal-fall{0%{transform:translateY(-10px) rotate(0);opacity:.85;}100%{transform:translateY(108vh) rotate(380deg);opacity:0;}}
-@keyframes burst-ring{0%{transform:translate(-50%,-50%) scale(.7);opacity:1;}100%{transform:translate(-50%,-50%) scale(3.2);opacity:0;}}
-@keyframes num-pop{0%{transform:scale(1.5);opacity:.3;}65%{transform:scale(.95);}100%{transform:scale(1);opacity:1;}}
-@keyframes word-slam{0%{transform:scale(0.4) translateY(30px);opacity:0;filter:blur(8px);}50%{filter:blur(0);}70%{transform:scale(1.08) translateY(-4px);}100%{transform:scale(1) translateY(0);opacity:1;}}
-@keyframes full-pop{0%{transform:scale(0.88);opacity:.3;}60%{transform:scale(1.04);}100%{transform:scale(1);opacity:1;}}
-@keyframes build-new{0%{transform:scale(0.5);opacity:0;}70%{transform:scale(1.06);}100%{transform:scale(1);opacity:1;}}
-@keyframes cd-pop{0%{transform:scale(1.6);opacity:0;}40%{opacity:1;}80%{transform:scale(1);}100%{transform:scale(.85);opacity:0;}}
+.option-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;}
+.fx-card{padding:10px 12px;border-radius:12px;cursor:pointer;border-width:1px;border-style:solid;transition:all 0.2s;display:flex;align-items:center;gap:10px;}
+.fx-icon{font-size:18px;width:30px;text-align:center;flex-shrink:0;}
+.preset-slot{padding:10px 12px;border-radius:10px;border:1px solid;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;}
+#player{position:fixed;inset:0;z-index:30;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;}
+#cv{max-width:100%;max-height:100vh;display:block;touch-action:none;}
+#player-controls{position:absolute;bottom:0;left:0;right:0;z-index:31;display:none;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;padding:16px 12px calc(16px + env(safe-area-inset-bottom));background:linear-gradient(to top,rgba(0,0,0,0.7),transparent);}
+.pc-btn{border-radius:30px;padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer;border:1px solid rgba(255,215,0,0.4);color:#FFD700;background:rgba(0,0,0,0.5);font-family:'Noto Sans Devanagari',serif;}
+.pc-round{border-radius:50%;width:46px;height:46px;font-size:18px;padding:0;}
+#export-overlay{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:24px;}
+#guide-modal{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.9);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px;}
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════ SETUP ═══════════════════════════════ -->
 <div id="setup"></div>
+<div id="sticky-bar"><button id="sticky-go" onclick="startPlayer()">▶ PREVIEW</button></div>
 
-<!-- ══════════════════════════════ COUNTER ══════════════════════════════ -->
-<div id="counter" style="display:none;">
-  <img id="bg-img-prev" alt="" style="opacity:0;"/>
-  <img id="bg-img-curr" alt="" style="opacity:0;"/>
-  <div id="gradient"></div>
-  <div id="watermark"></div>
-  <div id="img-dots"></div>
-  <div id="rec-ind"><div id="rec-dot" style="animation:rec-pulse 1.2s ease-in-out infinite;"></div><span style="color:rgba(255,255,255,0.7);font-size:11px;font-family:monospace;letter-spacing:1px;">REC</span></div>
-  <div id="countdown-overlay"><div id="cd-num"></div><div id="cd-hint">START YOUR SCREEN RECORDER NOW</div></div>
-  <div id="petals"></div>
-  <div id="ui-bottom">
-    <div id="om-sym">ॐ</div>
-    <div id="deity-lbl" style="display:none;"></div>
-    <div id="mantra-wrap"></div>
-    <div id="ring-wrap">
-      <svg id="ring-svg" style="overflow:visible;"></svg>
-      <div id="ring-center">
-        <div id="counter-num"></div>
-        <div id="counter-denom"></div>
-        <div id="counter-jap"></div>
-      </div>
-    </div>
-    <div id="mala-lbl" style="display:none;"></div>
-    <div id="tap-hint"></div>
-    <div id="controls">
-      <div id="play-btn">▶</div>
-      <button id="reset-btn" onclick="resetCounter(event)">↺</button>
-      <button id="rec-btn" onclick="startRecMode(event)">⏺ REC</button>
-      <button id="settings-btn" onclick="goBack(event)">⚙</button>
-    </div>
+<div id="player">
+  <canvas id="cv" width="1080" height="1920"></canvas>
+  <div id="player-controls">
+    <div id="pc-play" class="pc-btn pc-round" onclick="togglePlay(event)">⏸</div>
+    <button class="pc-btn pc-round" onclick="resetPlayer(event)">↺</button>
+    <button id="pc-export" class="pc-btn" onclick="openExport(event)">⬇ Save MP4</button>
+    <button class="pc-btn pc-round" onclick="showGuide(event)">?</button>
+    <button class="pc-btn pc-round" onclick="exitPlayer(event)">⚙</button>
   </div>
 </div>
 
+<div id="export-overlay"></div>
+<div id="guide-modal" onclick="hideGuide()"></div>
+<audio id="bhajan-audio" loop style="display:none;"></audio>
+
 <script>
-// ══════════════════════════════════════════════════════════════════════════════
-// GLOBAL STATE
-// ══════════════════════════════════════════════════════════════════════════════
-const THEMES = [
-  {id:"gold",    label:"Gold",    p:"#FFD700", s:"#FF8C00"},
-  {id:"white",   label:"White",   p:"#FFFFFF", s:"#E0E0E0"},
-  {id:"saffron", label:"Saffron", p:"#FF6B00", s:"#FF3D00"},
-  {id:"rose",    label:"Rose",    p:"#FF6EB4", s:"#FF1493"},
-  {id:"sky",     label:"Sky",     p:"#00CFFF", s:"#0090FF"},
-  {id:"emerald", label:"Emerald", p:"#00E888", s:"#00B860"},
-  {id:"silver",  label:"Silver",  p:"#C0C8D8", s:"#8899AA"},
-  {id:"custom",  label:"Custom",  p:"#FFD700", s:"#FF8C00"},
+"use strict";
+var Mp4Muxer = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+  var __accessCheck = (obj, member, msg) => {
+    if (!member.has(obj))
+      throw TypeError("Cannot " + msg);
+  };
+  var __privateGet = (obj, member, getter) => {
+    __accessCheck(obj, member, "read from private field");
+    return getter ? getter.call(obj) : member.get(obj);
+  };
+  var __privateAdd = (obj, member, value) => {
+    if (member.has(obj))
+      throw TypeError("Cannot add the same private member more than once");
+    member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
+  };
+  var __privateSet = (obj, member, value, setter) => {
+    __accessCheck(obj, member, "write to private field");
+    setter ? setter.call(obj, value) : member.set(obj, value);
+    return value;
+  };
+  var __privateWrapper = (obj, member, setter, getter) => ({
+    set _(value) {
+      __privateSet(obj, member, value, setter);
+    },
+    get _() {
+      return __privateGet(obj, member, getter);
+    }
+  });
+  var __privateMethod = (obj, member, method) => {
+    __accessCheck(obj, member, "access private method");
+    return method;
+  };
+
+  // src/index.ts
+  var src_exports = {};
+  __export(src_exports, {
+    ArrayBufferTarget: () => ArrayBufferTarget,
+    FileSystemWritableFileStreamTarget: () => FileSystemWritableFileStreamTarget,
+    Muxer: () => Muxer,
+    StreamTarget: () => StreamTarget
+  });
+
+  // src/misc.ts
+  var bytes = new Uint8Array(8);
+  var view = new DataView(bytes.buffer);
+  var u8 = (value) => {
+    return [(value % 256 + 256) % 256];
+  };
+  var u16 = (value) => {
+    view.setUint16(0, value, false);
+    return [bytes[0], bytes[1]];
+  };
+  var i16 = (value) => {
+    view.setInt16(0, value, false);
+    return [bytes[0], bytes[1]];
+  };
+  var u24 = (value) => {
+    view.setUint32(0, value, false);
+    return [bytes[1], bytes[2], bytes[3]];
+  };
+  var u32 = (value) => {
+    view.setUint32(0, value, false);
+    return [bytes[0], bytes[1], bytes[2], bytes[3]];
+  };
+  var i32 = (value) => {
+    view.setInt32(0, value, false);
+    return [bytes[0], bytes[1], bytes[2], bytes[3]];
+  };
+  var u64 = (value) => {
+    view.setUint32(0, Math.floor(value / 2 ** 32), false);
+    view.setUint32(4, value, false);
+    return [bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7]];
+  };
+  var fixed_8_8 = (value) => {
+    view.setInt16(0, 2 ** 8 * value, false);
+    return [bytes[0], bytes[1]];
+  };
+  var fixed_16_16 = (value) => {
+    view.setInt32(0, 2 ** 16 * value, false);
+    return [bytes[0], bytes[1], bytes[2], bytes[3]];
+  };
+  var fixed_2_30 = (value) => {
+    view.setInt32(0, 2 ** 30 * value, false);
+    return [bytes[0], bytes[1], bytes[2], bytes[3]];
+  };
+  var ascii = (text, nullTerminated = false) => {
+    let bytes2 = Array(text.length).fill(null).map((_, i) => text.charCodeAt(i));
+    if (nullTerminated)
+      bytes2.push(0);
+    return bytes2;
+  };
+  var last = (arr) => {
+    return arr && arr[arr.length - 1];
+  };
+  var lastPresentedSample = (samples) => {
+    let result = void 0;
+    for (let sample of samples) {
+      if (!result || sample.presentationTimestamp > result.presentationTimestamp) {
+        result = sample;
+      }
+    }
+    return result;
+  };
+  var intoTimescale = (timeInSeconds, timescale, round = true) => {
+    let value = timeInSeconds * timescale;
+    return round ? Math.round(value) : value;
+  };
+  var rotationMatrix = (rotationInDegrees) => {
+    let theta = rotationInDegrees * (Math.PI / 180);
+    let cosTheta = Math.cos(theta);
+    let sinTheta = Math.sin(theta);
+    return [
+      cosTheta,
+      sinTheta,
+      0,
+      -sinTheta,
+      cosTheta,
+      0,
+      0,
+      0,
+      1
+    ];
+  };
+  var IDENTITY_MATRIX = rotationMatrix(0);
+  var matrixToBytes = (matrix) => {
+    return [
+      fixed_16_16(matrix[0]),
+      fixed_16_16(matrix[1]),
+      fixed_2_30(matrix[2]),
+      fixed_16_16(matrix[3]),
+      fixed_16_16(matrix[4]),
+      fixed_2_30(matrix[5]),
+      fixed_16_16(matrix[6]),
+      fixed_16_16(matrix[7]),
+      fixed_2_30(matrix[8])
+    ];
+  };
+  var deepClone = (x) => {
+    if (!x)
+      return x;
+    if (typeof x !== "object")
+      return x;
+    if (Array.isArray(x))
+      return x.map(deepClone);
+    return Object.fromEntries(Object.entries(x).map(([key, value]) => [key, deepClone(value)]));
+  };
+  var isU32 = (value) => {
+    return value >= 0 && value < 2 ** 32;
+  };
+
+  // src/box.ts
+  var box = (type, contents, children) => ({
+    type,
+    contents: contents && new Uint8Array(contents.flat(10)),
+    children
+  });
+  var fullBox = (type, version, flags, contents, children) => box(
+    type,
+    [u8(version), u24(flags), contents ?? []],
+    children
+  );
+  var ftyp = (details) => {
+    let minorVersion = 512;
+    if (details.fragmented)
+      return box("ftyp", [
+        ascii("iso5"),
+        // Major brand
+        u32(minorVersion),
+        // Minor version
+        // Compatible brands
+        ascii("iso5"),
+        ascii("iso6"),
+        ascii("mp41")
+      ]);
+    return box("ftyp", [
+      ascii("isom"),
+      // Major brand
+      u32(minorVersion),
+      // Minor version
+      // Compatible brands
+      ascii("isom"),
+      details.holdsAvc ? ascii("avc1") : [],
+      ascii("mp41")
+    ]);
+  };
+  var mdat = (reserveLargeSize) => ({ type: "mdat", largeSize: reserveLargeSize });
+  var free = (size) => ({ type: "free", size });
+  var moov = (tracks, creationTime, fragmented = false) => box("moov", null, [
+    mvhd(creationTime, tracks),
+    ...tracks.map((x) => trak(x, creationTime)),
+    fragmented ? mvex(tracks) : null
+  ]);
+  var mvhd = (creationTime, tracks) => {
+    let duration = intoTimescale(Math.max(
+      0,
+      ...tracks.filter((x) => x.samples.length > 0).map((x) => {
+        const lastSample = lastPresentedSample(x.samples);
+        return lastSample.presentationTimestamp + lastSample.duration;
+      })
+    ), GLOBAL_TIMESCALE);
+    let nextTrackId = Math.max(...tracks.map((x) => x.id)) + 1;
+    let needsU64 = !isU32(creationTime) || !isU32(duration);
+    let u32OrU64 = needsU64 ? u64 : u32;
+    return fullBox("mvhd", +needsU64, 0, [
+      u32OrU64(creationTime),
+      // Creation time
+      u32OrU64(creationTime),
+      // Modification time
+      u32(GLOBAL_TIMESCALE),
+      // Timescale
+      u32OrU64(duration),
+      // Duration
+      fixed_16_16(1),
+      // Preferred rate
+      fixed_8_8(1),
+      // Preferred volume
+      Array(10).fill(0),
+      // Reserved
+      matrixToBytes(IDENTITY_MATRIX),
+      // Matrix
+      Array(24).fill(0),
+      // Pre-defined
+      u32(nextTrackId)
+      // Next track ID
+    ]);
+  };
+  var trak = (track, creationTime) => box("trak", null, [
+    tkhd(track, creationTime),
+    mdia(track, creationTime)
+  ]);
+  var tkhd = (track, creationTime) => {
+    let lastSample = lastPresentedSample(track.samples);
+    let durationInGlobalTimescale = intoTimescale(
+      lastSample ? lastSample.presentationTimestamp + lastSample.duration : 0,
+      GLOBAL_TIMESCALE
+    );
+    let needsU64 = !isU32(creationTime) || !isU32(durationInGlobalTimescale);
+    let u32OrU64 = needsU64 ? u64 : u32;
+    let matrix;
+    if (track.info.type === "video") {
+      matrix = typeof track.info.rotation === "number" ? rotationMatrix(track.info.rotation) : track.info.rotation;
+    } else {
+      matrix = IDENTITY_MATRIX;
+    }
+    return fullBox("tkhd", +needsU64, 3, [
+      u32OrU64(creationTime),
+      // Creation time
+      u32OrU64(creationTime),
+      // Modification time
+      u32(track.id),
+      // Track ID
+      u32(0),
+      // Reserved
+      u32OrU64(durationInGlobalTimescale),
+      // Duration
+      Array(8).fill(0),
+      // Reserved
+      u16(0),
+      // Layer
+      u16(0),
+      // Alternate group
+      fixed_8_8(track.info.type === "audio" ? 1 : 0),
+      // Volume
+      u16(0),
+      // Reserved
+      matrixToBytes(matrix),
+      // Matrix
+      fixed_16_16(track.info.type === "video" ? track.info.width : 0),
+      // Track width
+      fixed_16_16(track.info.type === "video" ? track.info.height : 0)
+      // Track height
+    ]);
+  };
+  var mdia = (track, creationTime) => box("mdia", null, [
+    mdhd(track, creationTime),
+    hdlr(track.info.type === "video" ? "vide" : "soun"),
+    minf(track)
+  ]);
+  var mdhd = (track, creationTime) => {
+    let lastSample = lastPresentedSample(track.samples);
+    let localDuration = intoTimescale(
+      lastSample ? lastSample.presentationTimestamp + lastSample.duration : 0,
+      track.timescale
+    );
+    let needsU64 = !isU32(creationTime) || !isU32(localDuration);
+    let u32OrU64 = needsU64 ? u64 : u32;
+    return fullBox("mdhd", +needsU64, 0, [
+      u32OrU64(creationTime),
+      // Creation time
+      u32OrU64(creationTime),
+      // Modification time
+      u32(track.timescale),
+      // Timescale
+      u32OrU64(localDuration),
+      // Duration
+      u16(21956),
+      // Language ("und", undetermined)
+      u16(0)
+      // Quality
+    ]);
+  };
+  var hdlr = (componentSubtype) => fullBox("hdlr", 0, 0, [
+    ascii("mhlr"),
+    // Component type
+    ascii(componentSubtype),
+    // Component subtype
+    u32(0),
+    // Component manufacturer
+    u32(0),
+    // Component flags
+    u32(0),
+    // Component flags mask
+    ascii("mp4-muxer-hdlr", true)
+    // Component name
+  ]);
+  var minf = (track) => box("minf", null, [
+    track.info.type === "video" ? vmhd() : smhd(),
+    dinf(),
+    stbl(track)
+  ]);
+  var vmhd = () => fullBox("vmhd", 0, 1, [
+    u16(0),
+    // Graphics mode
+    u16(0),
+    // Opcolor R
+    u16(0),
+    // Opcolor G
+    u16(0)
+    // Opcolor B
+  ]);
+  var smhd = () => fullBox("smhd", 0, 0, [
+    u16(0),
+    // Balance
+    u16(0)
+    // Reserved
+  ]);
+  var dinf = () => box("dinf", null, [
+    dref()
+  ]);
+  var dref = () => fullBox("dref", 0, 0, [
+    u32(1)
+    // Entry count
+  ], [
+    url()
+  ]);
+  var url = () => fullBox("url ", 0, 1);
+  var stbl = (track) => {
+    const needsCtts = track.compositionTimeOffsetTable.length > 1 || track.compositionTimeOffsetTable.some((x) => x.sampleCompositionTimeOffset !== 0);
+    return box("stbl", null, [
+      stsd(track),
+      stts(track),
+      stss(track),
+      stsc(track),
+      stsz(track),
+      stco(track),
+      needsCtts ? ctts(track) : null
+    ]);
+  };
+  var stsd = (track) => fullBox("stsd", 0, 0, [
+    u32(1)
+    // Entry count
+  ], [
+    track.info.type === "video" ? videoSampleDescription(
+      VIDEO_CODEC_TO_BOX_NAME[track.info.codec],
+      track
+    ) : soundSampleDescription(
+      AUDIO_CODEC_TO_BOX_NAME[track.info.codec],
+      track
+    )
+  ]);
+  var videoSampleDescription = (compressionType, track) => box(compressionType, [
+    Array(6).fill(0),
+    // Reserved
+    u16(1),
+    // Data reference index
+    u16(0),
+    // Pre-defined
+    u16(0),
+    // Reserved
+    Array(12).fill(0),
+    // Pre-defined
+    u16(track.info.width),
+    // Width
+    u16(track.info.height),
+    // Height
+    u32(4718592),
+    // Horizontal resolution
+    u32(4718592),
+    // Vertical resolution
+    u32(0),
+    // Reserved
+    u16(1),
+    // Frame count
+    Array(32).fill(0),
+    // Compressor name
+    u16(24),
+    // Depth
+    i16(65535)
+    // Pre-defined
+  ], [
+    VIDEO_CODEC_TO_CONFIGURATION_BOX[track.info.codec](track),
+    track.info.decoderConfig.colorSpace ? colr(track) : null
+  ]);
+  var COLOR_PRIMARIES_MAP = {
+    "bt709": 1,
+    // ITU-R BT.709
+    "bt470bg": 5,
+    // ITU-R BT.470BG
+    "smpte170m": 6
+    // ITU-R BT.601 525 - SMPTE 170M
+  };
+  var TRANSFER_CHARACTERISTICS_MAP = {
+    "bt709": 1,
+    // ITU-R BT.709
+    "smpte170m": 6,
+    // SMPTE 170M
+    "iec61966-2-1": 13
+    // IEC 61966-2-1
+  };
+  var MATRIX_COEFFICIENTS_MAP = {
+    "rgb": 0,
+    // Identity
+    "bt709": 1,
+    // ITU-R BT.709
+    "bt470bg": 5,
+    // ITU-R BT.470BG
+    "smpte170m": 6
+    // SMPTE 170M
+  };
+  var colr = (track) => box("colr", [
+    ascii("nclx"),
+    // Colour type
+    u16(COLOR_PRIMARIES_MAP[track.info.decoderConfig.colorSpace.primaries]),
+    // Colour primaries
+    u16(TRANSFER_CHARACTERISTICS_MAP[track.info.decoderConfig.colorSpace.transfer]),
+    // Transfer characteristics
+    u16(MATRIX_COEFFICIENTS_MAP[track.info.decoderConfig.colorSpace.matrix]),
+    // Matrix coefficients
+    u8((track.info.decoderConfig.colorSpace.fullRange ? 1 : 0) << 7)
+    // Full range flag
+  ]);
+  var avcC = (track) => track.info.decoderConfig && box("avcC", [
+    // For AVC, description is an AVCDecoderConfigurationRecord, so nothing else to do here
+    ...new Uint8Array(track.info.decoderConfig.description)
+  ]);
+  var hvcC = (track) => track.info.decoderConfig && box("hvcC", [
+    // For HEVC, description is a HEVCDecoderConfigurationRecord, so nothing else to do here
+    ...new Uint8Array(track.info.decoderConfig.description)
+  ]);
+  var vpcC = (track) => {
+    if (!track.info.decoderConfig) {
+      return null;
+    }
+    let decoderConfig = track.info.decoderConfig;
+    if (!decoderConfig.colorSpace) {
+      throw new Error(`'colorSpace' is required in the decoder config for VP9.`);
+    }
+    let parts = decoderConfig.codec.split(".");
+    let profile = Number(parts[1]);
+    let level = Number(parts[2]);
+    let bitDepth = Number(parts[3]);
+    let chromaSubsampling = 0;
+    let thirdByte = (bitDepth << 4) + (chromaSubsampling << 1) + Number(decoderConfig.colorSpace.fullRange);
+    let colourPrimaries = 2;
+    let transferCharacteristics = 2;
+    let matrixCoefficients = 2;
+    return fullBox("vpcC", 1, 0, [
+      u8(profile),
+      // Profile
+      u8(level),
+      // Level
+      u8(thirdByte),
+      // Bit depth, chroma subsampling, full range
+      u8(colourPrimaries),
+      // Colour primaries
+      u8(transferCharacteristics),
+      // Transfer characteristics
+      u8(matrixCoefficients),
+      // Matrix coefficients
+      u16(0)
+      // Codec initialization data size
+    ]);
+  };
+  var av1C = () => {
+    let marker = 1;
+    let version = 1;
+    let firstByte = (marker << 7) + version;
+    return box("av1C", [
+      firstByte,
+      0,
+      0,
+      0
+    ]);
+  };
+  var soundSampleDescription = (compressionType, track) => box(compressionType, [
+    Array(6).fill(0),
+    // Reserved
+    u16(1),
+    // Data reference index
+    u16(0),
+    // Version
+    u16(0),
+    // Revision level
+    u32(0),
+    // Vendor
+    u16(track.info.numberOfChannels),
+    // Number of channels
+    u16(16),
+    // Sample size (bits)
+    u16(0),
+    // Compression ID
+    u16(0),
+    // Packet size
+    fixed_16_16(track.info.sampleRate)
+    // Sample rate
+  ], [
+    AUDIO_CODEC_TO_CONFIGURATION_BOX[track.info.codec](track)
+  ]);
+  var esds = (track) => {
+    let description = new Uint8Array(track.info.decoderConfig.description);
+    return fullBox("esds", 0, 0, [
+      // https://stackoverflow.com/a/54803118
+      u32(58753152),
+      // TAG(3) = Object Descriptor ([2])
+      u8(32 + description.byteLength),
+      // length of this OD (which includes the next 2 tags)
+      u16(1),
+      // ES_ID = 1
+      u8(0),
+      // flags etc = 0
+      u32(75530368),
+      // TAG(4) = ES Descriptor ([2]) embedded in above OD
+      u8(18 + description.byteLength),
+      // length of this ESD
+      u8(64),
+      // MPEG-4 Audio
+      u8(21),
+      // stream type(6bits)=5 audio, flags(2bits)=1
+      u24(0),
+      // 24bit buffer size
+      u32(130071),
+      // max bitrate
+      u32(130071),
+      // avg bitrate
+      u32(92307584),
+      // TAG(5) = ASC ([2],[3]) embedded in above OD
+      u8(description.byteLength),
+      // length
+      ...description,
+      u32(109084800),
+      // TAG(6)
+      u8(1),
+      // length
+      u8(2)
+      // data
+    ]);
+  };
+  var dOps = (track) => {
+    let preskip = 3840;
+    let gain = 0;
+    const description = track.info.decoderConfig?.description;
+    if (description) {
+      if (description.byteLength < 18) {
+        throw new TypeError("Invalid decoder description provided for Opus; must be at least 18 bytes long.");
+      }
+      const view2 = ArrayBuffer.isView(description) ? new DataView(description.buffer, description.byteOffset, description.byteLength) : new DataView(description);
+      preskip = view2.getUint16(10, true);
+      gain = view2.getInt16(14, true);
+    }
+    return box("dOps", [
+      u8(0),
+      // Version
+      u8(track.info.numberOfChannels),
+      // OutputChannelCount
+      u16(preskip),
+      u32(track.info.sampleRate),
+      // InputSampleRate
+      fixed_8_8(gain),
+      // OutputGain
+      u8(0)
+      // ChannelMappingFamily
+    ]);
+  };
+  var stts = (track) => {
+    return fullBox("stts", 0, 0, [
+      u32(track.timeToSampleTable.length),
+      // Number of entries
+      track.timeToSampleTable.map((x) => [
+        // Time-to-sample table
+        u32(x.sampleCount),
+        // Sample count
+        u32(x.sampleDelta)
+        // Sample duration
+      ])
+    ]);
+  };
+  var stss = (track) => {
+    if (track.samples.every((x) => x.type === "key"))
+      return null;
+    let keySamples = [...track.samples.entries()].filter(([, sample]) => sample.type === "key");
+    return fullBox("stss", 0, 0, [
+      u32(keySamples.length),
+      // Number of entries
+      keySamples.map(([index]) => u32(index + 1))
+      // Sync sample table
+    ]);
+  };
+  var stsc = (track) => {
+    return fullBox("stsc", 0, 0, [
+      u32(track.compactlyCodedChunkTable.length),
+      // Number of entries
+      track.compactlyCodedChunkTable.map((x) => [
+        // Sample-to-chunk table
+        u32(x.firstChunk),
+        // First chunk
+        u32(x.samplesPerChunk),
+        // Samples per chunk
+        u32(1)
+        // Sample description index
+      ])
+    ]);
+  };
+  var stsz = (track) => fullBox("stsz", 0, 0, [
+    u32(0),
+    // Sample size (0 means non-constant size)
+    u32(track.samples.length),
+    // Number of entries
+    track.samples.map((x) => u32(x.size))
+    // Sample size table
+  ]);
+  var stco = (track) => {
+    if (track.finalizedChunks.length > 0 && last(track.finalizedChunks).offset >= 2 ** 32) {
+      return fullBox("co64", 0, 0, [
+        u32(track.finalizedChunks.length),
+        // Number of entries
+        track.finalizedChunks.map((x) => u64(x.offset))
+        // Chunk offset table
+      ]);
+    }
+    return fullBox("stco", 0, 0, [
+      u32(track.finalizedChunks.length),
+      // Number of entries
+      track.finalizedChunks.map((x) => u32(x.offset))
+      // Chunk offset table
+    ]);
+  };
+  var ctts = (track) => {
+    return fullBox("ctts", 0, 0, [
+      u32(track.compositionTimeOffsetTable.length),
+      // Number of entries
+      track.compositionTimeOffsetTable.map((x) => [
+        // Time-to-sample table
+        u32(x.sampleCount),
+        // Sample count
+        u32(x.sampleCompositionTimeOffset)
+        // Sample offset
+      ])
+    ]);
+  };
+  var mvex = (tracks) => {
+    return box("mvex", null, tracks.map(trex));
+  };
+  var trex = (track) => {
+    return fullBox("trex", 0, 0, [
+      u32(track.id),
+      // Track ID
+      u32(1),
+      // Default sample description index
+      u32(0),
+      // Default sample duration
+      u32(0),
+      // Default sample size
+      u32(0)
+      // Default sample flags
+    ]);
+  };
+  var moof = (sequenceNumber, tracks) => {
+    return box("moof", null, [
+      mfhd(sequenceNumber),
+      ...tracks.map(traf)
+    ]);
+  };
+  var mfhd = (sequenceNumber) => {
+    return fullBox("mfhd", 0, 0, [
+      u32(sequenceNumber)
+      // Sequence number
+    ]);
+  };
+  var fragmentSampleFlags = (sample) => {
+    let byte1 = 0;
+    let byte2 = 0;
+    let byte3 = 0;
+    let byte4 = 0;
+    let sampleIsDifferenceSample = sample.type === "delta";
+    byte2 |= +sampleIsDifferenceSample;
+    if (sampleIsDifferenceSample) {
+      byte1 |= 1;
+    } else {
+      byte1 |= 2;
+    }
+    return byte1 << 24 | byte2 << 16 | byte3 << 8 | byte4;
+  };
+  var traf = (track) => {
+    return box("traf", null, [
+      tfhd(track),
+      tfdt(track),
+      trun(track)
+    ]);
+  };
+  var tfhd = (track) => {
+    let tfFlags = 0;
+    tfFlags |= 8;
+    tfFlags |= 16;
+    tfFlags |= 32;
+    tfFlags |= 131072;
+    let referenceSample = track.currentChunk.samples[1] ?? track.currentChunk.samples[0];
+    let referenceSampleInfo = {
+      duration: referenceSample.timescaleUnitsToNextSample,
+      size: referenceSample.size,
+      flags: fragmentSampleFlags(referenceSample)
+    };
+    return fullBox("tfhd", 0, tfFlags, [
+      u32(track.id),
+      // Track ID
+      u32(referenceSampleInfo.duration),
+      // Default sample duration
+      u32(referenceSampleInfo.size),
+      // Default sample size
+      u32(referenceSampleInfo.flags)
+      // Default sample flags
+    ]);
+  };
+  var tfdt = (track) => {
+    return fullBox("tfdt", 1, 0, [
+      u64(intoTimescale(track.currentChunk.startTimestamp, track.timescale))
+      // Base Media Decode Time
+    ]);
+  };
+  var trun = (track) => {
+    let allSampleDurations = track.currentChunk.samples.map((x) => x.timescaleUnitsToNextSample);
+    let allSampleSizes = track.currentChunk.samples.map((x) => x.size);
+    let allSampleFlags = track.currentChunk.samples.map(fragmentSampleFlags);
+    let allSampleCompositionTimeOffsets = track.currentChunk.samples.map((x) => intoTimescale(x.presentationTimestamp - x.decodeTimestamp, track.timescale));
+    let uniqueSampleDurations = new Set(allSampleDurations);
+    let uniqueSampleSizes = new Set(allSampleSizes);
+    let uniqueSampleFlags = new Set(allSampleFlags);
+    let uniqueSampleCompositionTimeOffsets = new Set(allSampleCompositionTimeOffsets);
+    let firstSampleFlagsPresent = uniqueSampleFlags.size === 2 && allSampleFlags[0] !== allSampleFlags[1];
+    let sampleDurationPresent = uniqueSampleDurations.size > 1;
+    let sampleSizePresent = uniqueSampleSizes.size > 1;
+    let sampleFlagsPresent = !firstSampleFlagsPresent && uniqueSampleFlags.size > 1;
+    let sampleCompositionTimeOffsetsPresent = uniqueSampleCompositionTimeOffsets.size > 1 || [...uniqueSampleCompositionTimeOffsets].some((x) => x !== 0);
+    let flags = 0;
+    flags |= 1;
+    flags |= 4 * +firstSampleFlagsPresent;
+    flags |= 256 * +sampleDurationPresent;
+    flags |= 512 * +sampleSizePresent;
+    flags |= 1024 * +sampleFlagsPresent;
+    flags |= 2048 * +sampleCompositionTimeOffsetsPresent;
+    return fullBox("trun", 1, flags, [
+      u32(track.currentChunk.samples.length),
+      // Sample count
+      u32(track.currentChunk.offset - track.currentChunk.moofOffset || 0),
+      // Data offset
+      firstSampleFlagsPresent ? u32(allSampleFlags[0]) : [],
+      track.currentChunk.samples.map((_, i) => [
+        sampleDurationPresent ? u32(allSampleDurations[i]) : [],
+        // Sample duration
+        sampleSizePresent ? u32(allSampleSizes[i]) : [],
+        // Sample size
+        sampleFlagsPresent ? u32(allSampleFlags[i]) : [],
+        // Sample flags
+        // Sample composition time offsets
+        sampleCompositionTimeOffsetsPresent ? i32(allSampleCompositionTimeOffsets[i]) : []
+      ])
+    ]);
+  };
+  var mfra = (tracks) => {
+    return box("mfra", null, [
+      ...tracks.map(tfra),
+      mfro()
+    ]);
+  };
+  var tfra = (track, trackIndex) => {
+    let version = 1;
+    return fullBox("tfra", version, 0, [
+      u32(track.id),
+      // Track ID
+      u32(63),
+      // This specifies that traf number, trun number and sample number are 32-bit ints
+      u32(track.finalizedChunks.length),
+      // Number of entries
+      track.finalizedChunks.map((chunk) => [
+        u64(intoTimescale(chunk.startTimestamp, track.timescale)),
+        // Time
+        u64(chunk.moofOffset),
+        // moof offset
+        u32(trackIndex + 1),
+        // traf number
+        u32(1),
+        // trun number
+        u32(1)
+        // Sample number
+      ])
+    ]);
+  };
+  var mfro = () => {
+    return fullBox("mfro", 0, 0, [
+      // This value needs to be overwritten manually from the outside, where the actual size of the enclosing mfra box
+      // is known
+      u32(0)
+      // Size
+    ]);
+  };
+  var VIDEO_CODEC_TO_BOX_NAME = {
+    "avc": "avc1",
+    "hevc": "hvc1",
+    "vp9": "vp09",
+    "av1": "av01"
+  };
+  var VIDEO_CODEC_TO_CONFIGURATION_BOX = {
+    "avc": avcC,
+    "hevc": hvcC,
+    "vp9": vpcC,
+    "av1": av1C
+  };
+  var AUDIO_CODEC_TO_BOX_NAME = {
+    "aac": "mp4a",
+    "opus": "Opus"
+  };
+  var AUDIO_CODEC_TO_CONFIGURATION_BOX = {
+    "aac": esds,
+    "opus": dOps
+  };
+
+  // src/target.ts
+  var isTarget = Symbol("isTarget");
+  var Target = class {
+  };
+  isTarget;
+  var ArrayBufferTarget = class extends Target {
+    constructor() {
+      super(...arguments);
+      this.buffer = null;
+    }
+  };
+  var StreamTarget = class extends Target {
+    constructor(options) {
+      super();
+      this.options = options;
+      if (typeof options !== "object") {
+        throw new TypeError("StreamTarget requires an options object to be passed to its constructor.");
+      }
+      if (options.onData) {
+        if (typeof options.onData !== "function") {
+          throw new TypeError("options.onData, when provided, must be a function.");
+        }
+        if (options.onData.length < 2) {
+          throw new TypeError(
+            "options.onData, when provided, must be a function that takes in at least two arguments (data and position). Ignoring the position argument, which specifies the byte offset at which the data is to be written, can lead to broken outputs."
+          );
+        }
+      }
+      if (options.chunked !== void 0 && typeof options.chunked !== "boolean") {
+        throw new TypeError("options.chunked, when provided, must be a boolean.");
+      }
+      if (options.chunkSize !== void 0 && (!Number.isInteger(options.chunkSize) || options.chunkSize < 1024)) {
+        throw new TypeError("options.chunkSize, when provided, must be an integer and not smaller than 1024.");
+      }
+    }
+  };
+  var FileSystemWritableFileStreamTarget = class extends Target {
+    constructor(stream, options) {
+      super();
+      this.stream = stream;
+      this.options = options;
+      if (!(stream instanceof FileSystemWritableFileStream)) {
+        throw new TypeError("FileSystemWritableFileStreamTarget requires a FileSystemWritableFileStream instance.");
+      }
+      if (options !== void 0 && typeof options !== "object") {
+        throw new TypeError("FileSystemWritableFileStreamTarget's options, when provided, must be an object.");
+      }
+      if (options) {
+        if (options.chunkSize !== void 0 && (!Number.isInteger(options.chunkSize) || options.chunkSize <= 0)) {
+          throw new TypeError("options.chunkSize, when provided, must be a positive integer");
+        }
+      }
+    }
+  };
+
+  // src/writer.ts
+  var _helper, _helperView;
+  var Writer = class {
+    constructor() {
+      this.pos = 0;
+      __privateAdd(this, _helper, new Uint8Array(8));
+      __privateAdd(this, _helperView, new DataView(__privateGet(this, _helper).buffer));
+      /**
+       * Stores the position from the start of the file to where boxes elements have been written. This is used to
+       * rewrite/edit elements that were already added before, and to measure sizes of things.
+       */
+      this.offsets = /* @__PURE__ */ new WeakMap();
+    }
+    /** Sets the current position for future writes to a new one. */
+    seek(newPos) {
+      this.pos = newPos;
+    }
+    writeU32(value) {
+      __privateGet(this, _helperView).setUint32(0, value, false);
+      this.write(__privateGet(this, _helper).subarray(0, 4));
+    }
+    writeU64(value) {
+      __privateGet(this, _helperView).setUint32(0, Math.floor(value / 2 ** 32), false);
+      __privateGet(this, _helperView).setUint32(4, value, false);
+      this.write(__privateGet(this, _helper).subarray(0, 8));
+    }
+    writeAscii(text) {
+      for (let i = 0; i < text.length; i++) {
+        __privateGet(this, _helperView).setUint8(i % 8, text.charCodeAt(i));
+        if (i % 8 === 7)
+          this.write(__privateGet(this, _helper));
+      }
+      if (text.length % 8 !== 0) {
+        this.write(__privateGet(this, _helper).subarray(0, text.length % 8));
+      }
+    }
+    writeBox(box2) {
+      this.offsets.set(box2, this.pos);
+      if (box2.contents && !box2.children) {
+        this.writeBoxHeader(box2, box2.size ?? box2.contents.byteLength + 8);
+        this.write(box2.contents);
+      } else {
+        let startPos = this.pos;
+        this.writeBoxHeader(box2, 0);
+        if (box2.contents)
+          this.write(box2.contents);
+        if (box2.children) {
+          for (let child of box2.children)
+            if (child)
+              this.writeBox(child);
+        }
+        let endPos = this.pos;
+        let size = box2.size ?? endPos - startPos;
+        this.seek(startPos);
+        this.writeBoxHeader(box2, size);
+        this.seek(endPos);
+      }
+    }
+    writeBoxHeader(box2, size) {
+      this.writeU32(box2.largeSize ? 1 : size);
+      this.writeAscii(box2.type);
+      if (box2.largeSize)
+        this.writeU64(size);
+    }
+    measureBoxHeader(box2) {
+      return 8 + (box2.largeSize ? 8 : 0);
+    }
+    patchBox(box2) {
+      let endPos = this.pos;
+      this.seek(this.offsets.get(box2));
+      this.writeBox(box2);
+      this.seek(endPos);
+    }
+    measureBox(box2) {
+      if (box2.contents && !box2.children) {
+        let headerSize = this.measureBoxHeader(box2);
+        return headerSize + box2.contents.byteLength;
+      } else {
+        let result = this.measureBoxHeader(box2);
+        if (box2.contents)
+          result += box2.contents.byteLength;
+        if (box2.children) {
+          for (let child of box2.children)
+            if (child)
+              result += this.measureBox(child);
+        }
+        return result;
+      }
+    }
+  };
+  _helper = new WeakMap();
+  _helperView = new WeakMap();
+  var _target, _buffer, _bytes, _maxPos, _ensureSize, ensureSize_fn;
+  var ArrayBufferTargetWriter = class extends Writer {
+    constructor(target) {
+      super();
+      __privateAdd(this, _ensureSize);
+      __privateAdd(this, _target, void 0);
+      __privateAdd(this, _buffer, new ArrayBuffer(2 ** 16));
+      __privateAdd(this, _bytes, new Uint8Array(__privateGet(this, _buffer)));
+      __privateAdd(this, _maxPos, 0);
+      __privateSet(this, _target, target);
+    }
+    write(data) {
+      __privateMethod(this, _ensureSize, ensureSize_fn).call(this, this.pos + data.byteLength);
+      __privateGet(this, _bytes).set(data, this.pos);
+      this.pos += data.byteLength;
+      __privateSet(this, _maxPos, Math.max(__privateGet(this, _maxPos), this.pos));
+    }
+    finalize() {
+      __privateMethod(this, _ensureSize, ensureSize_fn).call(this, this.pos);
+      __privateGet(this, _target).buffer = __privateGet(this, _buffer).slice(0, Math.max(__privateGet(this, _maxPos), this.pos));
+    }
+  };
+  _target = new WeakMap();
+  _buffer = new WeakMap();
+  _bytes = new WeakMap();
+  _maxPos = new WeakMap();
+  _ensureSize = new WeakSet();
+  ensureSize_fn = function(size) {
+    let newLength = __privateGet(this, _buffer).byteLength;
+    while (newLength < size)
+      newLength *= 2;
+    if (newLength === __privateGet(this, _buffer).byteLength)
+      return;
+    let newBuffer = new ArrayBuffer(newLength);
+    let newBytes = new Uint8Array(newBuffer);
+    newBytes.set(__privateGet(this, _bytes), 0);
+    __privateSet(this, _buffer, newBuffer);
+    __privateSet(this, _bytes, newBytes);
+  };
+  var DEFAULT_CHUNK_SIZE = 2 ** 24;
+  var MAX_CHUNKS_AT_ONCE = 2;
+  var _target2, _sections, _chunked, _chunkSize, _chunks, _writeDataIntoChunks, writeDataIntoChunks_fn, _insertSectionIntoChunk, insertSectionIntoChunk_fn, _createChunk, createChunk_fn, _flushChunks, flushChunks_fn;
+  var StreamTargetWriter = class extends Writer {
+    constructor(target) {
+      super();
+      __privateAdd(this, _writeDataIntoChunks);
+      __privateAdd(this, _insertSectionIntoChunk);
+      __privateAdd(this, _createChunk);
+      __privateAdd(this, _flushChunks);
+      __privateAdd(this, _target2, void 0);
+      __privateAdd(this, _sections, []);
+      __privateAdd(this, _chunked, void 0);
+      __privateAdd(this, _chunkSize, void 0);
+      /**
+       * The data is divided up into fixed-size chunks, whose contents are first filled in RAM and then flushed out.
+       * A chunk is flushed if all of its contents have been written.
+       */
+      __privateAdd(this, _chunks, []);
+      __privateSet(this, _target2, target);
+      __privateSet(this, _chunked, target.options?.chunked ?? false);
+      __privateSet(this, _chunkSize, target.options?.chunkSize ?? DEFAULT_CHUNK_SIZE);
+    }
+    write(data) {
+      __privateGet(this, _sections).push({
+        data: data.slice(),
+        start: this.pos
+      });
+      this.pos += data.byteLength;
+    }
+    flush() {
+      if (__privateGet(this, _sections).length === 0)
+        return;
+      let chunks = [];
+      let sorted = [...__privateGet(this, _sections)].sort((a, b) => a.start - b.start);
+      chunks.push({
+        start: sorted[0].start,
+        size: sorted[0].data.byteLength
+      });
+      for (let i = 1; i < sorted.length; i++) {
+        let lastChunk = chunks[chunks.length - 1];
+        let section = sorted[i];
+        if (section.start <= lastChunk.start + lastChunk.size) {
+          lastChunk.size = Math.max(lastChunk.size, section.start + section.data.byteLength - lastChunk.start);
+        } else {
+          chunks.push({
+            start: section.start,
+            size: section.data.byteLength
+          });
+        }
+      }
+      for (let chunk of chunks) {
+        chunk.data = new Uint8Array(chunk.size);
+        for (let section of __privateGet(this, _sections)) {
+          if (chunk.start <= section.start && section.start < chunk.start + chunk.size) {
+            chunk.data.set(section.data, section.start - chunk.start);
+          }
+        }
+        if (__privateGet(this, _chunked)) {
+          __privateMethod(this, _writeDataIntoChunks, writeDataIntoChunks_fn).call(this, chunk.data, chunk.start);
+          __privateMethod(this, _flushChunks, flushChunks_fn).call(this);
+        } else {
+          __privateGet(this, _target2).options.onData?.(chunk.data, chunk.start);
+        }
+      }
+      __privateGet(this, _sections).length = 0;
+    }
+    finalize() {
+      if (__privateGet(this, _chunked)) {
+        __privateMethod(this, _flushChunks, flushChunks_fn).call(this, true);
+      }
+    }
+  };
+  _target2 = new WeakMap();
+  _sections = new WeakMap();
+  _chunked = new WeakMap();
+  _chunkSize = new WeakMap();
+  _chunks = new WeakMap();
+  _writeDataIntoChunks = new WeakSet();
+  writeDataIntoChunks_fn = function(data, position) {
+    let chunkIndex = __privateGet(this, _chunks).findIndex((x) => x.start <= position && position < x.start + __privateGet(this, _chunkSize));
+    if (chunkIndex === -1)
+      chunkIndex = __privateMethod(this, _createChunk, createChunk_fn).call(this, position);
+    let chunk = __privateGet(this, _chunks)[chunkIndex];
+    let relativePosition = position - chunk.start;
+    let toWrite = data.subarray(0, Math.min(__privateGet(this, _chunkSize) - relativePosition, data.byteLength));
+    chunk.data.set(toWrite, relativePosition);
+    let section = {
+      start: relativePosition,
+      end: relativePosition + toWrite.byteLength
+    };
+    __privateMethod(this, _insertSectionIntoChunk, insertSectionIntoChunk_fn).call(this, chunk, section);
+    if (chunk.written[0].start === 0 && chunk.written[0].end === __privateGet(this, _chunkSize)) {
+      chunk.shouldFlush = true;
+    }
+    if (__privateGet(this, _chunks).length > MAX_CHUNKS_AT_ONCE) {
+      for (let i = 0; i < __privateGet(this, _chunks).length - 1; i++) {
+        __privateGet(this, _chunks)[i].shouldFlush = true;
+      }
+      __privateMethod(this, _flushChunks, flushChunks_fn).call(this);
+    }
+    if (toWrite.byteLength < data.byteLength) {
+      __privateMethod(this, _writeDataIntoChunks, writeDataIntoChunks_fn).call(this, data.subarray(toWrite.byteLength), position + toWrite.byteLength);
+    }
+  };
+  _insertSectionIntoChunk = new WeakSet();
+  insertSectionIntoChunk_fn = function(chunk, section) {
+    let low = 0;
+    let high = chunk.written.length - 1;
+    let index = -1;
+    while (low <= high) {
+      let mid = Math.floor(low + (high - low + 1) / 2);
+      if (chunk.written[mid].start <= section.start) {
+        low = mid + 1;
+        index = mid;
+      } else {
+        high = mid - 1;
+      }
+    }
+    chunk.written.splice(index + 1, 0, section);
+    if (index === -1 || chunk.written[index].end < section.start)
+      index++;
+    while (index < chunk.written.length - 1 && chunk.written[index].end >= chunk.written[index + 1].start) {
+      chunk.written[index].end = Math.max(chunk.written[index].end, chunk.written[index + 1].end);
+      chunk.written.splice(index + 1, 1);
+    }
+  };
+  _createChunk = new WeakSet();
+  createChunk_fn = function(includesPosition) {
+    let start = Math.floor(includesPosition / __privateGet(this, _chunkSize)) * __privateGet(this, _chunkSize);
+    let chunk = {
+      start,
+      data: new Uint8Array(__privateGet(this, _chunkSize)),
+      written: [],
+      shouldFlush: false
+    };
+    __privateGet(this, _chunks).push(chunk);
+    __privateGet(this, _chunks).sort((a, b) => a.start - b.start);
+    return __privateGet(this, _chunks).indexOf(chunk);
+  };
+  _flushChunks = new WeakSet();
+  flushChunks_fn = function(force = false) {
+    for (let i = 0; i < __privateGet(this, _chunks).length; i++) {
+      let chunk = __privateGet(this, _chunks)[i];
+      if (!chunk.shouldFlush && !force)
+        continue;
+      for (let section of chunk.written) {
+        __privateGet(this, _target2).options.onData?.(
+          chunk.data.subarray(section.start, section.end),
+          chunk.start + section.start
+        );
+      }
+      __privateGet(this, _chunks).splice(i--, 1);
+    }
+  };
+  var FileSystemWritableFileStreamTargetWriter = class extends StreamTargetWriter {
+    constructor(target) {
+      super(new StreamTarget({
+        onData: (data, position) => target.stream.write({
+          type: "write",
+          data,
+          position
+        }),
+        chunked: true,
+        chunkSize: target.options?.chunkSize
+      }));
+    }
+  };
+
+  // src/muxer.ts
+  var GLOBAL_TIMESCALE = 1e3;
+  var SUPPORTED_VIDEO_CODECS = ["avc", "hevc", "vp9", "av1"];
+  var SUPPORTED_AUDIO_CODECS = ["aac", "opus"];
+  var TIMESTAMP_OFFSET = 2082844800;
+  var FIRST_TIMESTAMP_BEHAVIORS = ["strict", "offset", "cross-track-offset"];
+  var _options, _writer, _ftypSize, _mdat, _videoTrack, _audioTrack, _creationTime, _finalizedChunks, _nextFragmentNumber, _videoSampleQueue, _audioSampleQueue, _finalized, _validateOptions, validateOptions_fn, _writeHeader, writeHeader_fn, _computeMoovSizeUpperBound, computeMoovSizeUpperBound_fn, _prepareTracks, prepareTracks_fn, _generateMpeg4AudioSpecificConfig, generateMpeg4AudioSpecificConfig_fn, _createSampleForTrack, createSampleForTrack_fn, _addSampleToTrack, addSampleToTrack_fn, _validateTimestamp, validateTimestamp_fn, _finalizeCurrentChunk, finalizeCurrentChunk_fn, _finalizeFragment, finalizeFragment_fn, _maybeFlushStreamingTargetWriter, maybeFlushStreamingTargetWriter_fn, _ensureNotFinalized, ensureNotFinalized_fn;
+  var Muxer = class {
+    constructor(options) {
+      __privateAdd(this, _validateOptions);
+      __privateAdd(this, _writeHeader);
+      __privateAdd(this, _computeMoovSizeUpperBound);
+      __privateAdd(this, _prepareTracks);
+      // https://wiki.multimedia.cx/index.php/MPEG-4_Audio
+      __privateAdd(this, _generateMpeg4AudioSpecificConfig);
+      __privateAdd(this, _createSampleForTrack);
+      __privateAdd(this, _addSampleToTrack);
+      __privateAdd(this, _validateTimestamp);
+      __privateAdd(this, _finalizeCurrentChunk);
+      __privateAdd(this, _finalizeFragment);
+      __privateAdd(this, _maybeFlushStreamingTargetWriter);
+      __privateAdd(this, _ensureNotFinalized);
+      __privateAdd(this, _options, void 0);
+      __privateAdd(this, _writer, void 0);
+      __privateAdd(this, _ftypSize, void 0);
+      __privateAdd(this, _mdat, void 0);
+      __privateAdd(this, _videoTrack, null);
+      __privateAdd(this, _audioTrack, null);
+      __privateAdd(this, _creationTime, Math.floor(Date.now() / 1e3) + TIMESTAMP_OFFSET);
+      __privateAdd(this, _finalizedChunks, []);
+      // Fields for fragmented MP4:
+      __privateAdd(this, _nextFragmentNumber, 1);
+      __privateAdd(this, _videoSampleQueue, []);
+      __privateAdd(this, _audioSampleQueue, []);
+      __privateAdd(this, _finalized, false);
+      __privateMethod(this, _validateOptions, validateOptions_fn).call(this, options);
+      options.video = deepClone(options.video);
+      options.audio = deepClone(options.audio);
+      options.fastStart = deepClone(options.fastStart);
+      this.target = options.target;
+      __privateSet(this, _options, {
+        firstTimestampBehavior: "strict",
+        ...options
+      });
+      if (options.target instanceof ArrayBufferTarget) {
+        __privateSet(this, _writer, new ArrayBufferTargetWriter(options.target));
+      } else if (options.target instanceof StreamTarget) {
+        __privateSet(this, _writer, new StreamTargetWriter(options.target));
+      } else if (options.target instanceof FileSystemWritableFileStreamTarget) {
+        __privateSet(this, _writer, new FileSystemWritableFileStreamTargetWriter(options.target));
+      } else {
+        throw new Error(`Invalid target: ${options.target}`);
+      }
+      __privateMethod(this, _prepareTracks, prepareTracks_fn).call(this);
+      __privateMethod(this, _writeHeader, writeHeader_fn).call(this);
+    }
+    addVideoChunk(sample, meta, timestamp, compositionTimeOffset) {
+      if (!(sample instanceof EncodedVideoChunk)) {
+        throw new TypeError("addVideoChunk's first argument (sample) must be of type EncodedVideoChunk.");
+      }
+      if (meta && typeof meta !== "object") {
+        throw new TypeError("addVideoChunk's second argument (meta), when provided, must be an object.");
+      }
+      if (timestamp !== void 0 && (!Number.isFinite(timestamp) || timestamp < 0)) {
+        throw new TypeError(
+          "addVideoChunk's third argument (timestamp), when provided, must be a non-negative real number."
+        );
+      }
+      if (compositionTimeOffset !== void 0 && !Number.isFinite(compositionTimeOffset)) {
+        throw new TypeError(
+          "addVideoChunk's fourth argument (compositionTimeOffset), when provided, must be a real number."
+        );
+      }
+      let data = new Uint8Array(sample.byteLength);
+      sample.copyTo(data);
+      this.addVideoChunkRaw(
+        data,
+        sample.type,
+        timestamp ?? sample.timestamp,
+        sample.duration,
+        meta,
+        compositionTimeOffset
+      );
+    }
+    addVideoChunkRaw(data, type, timestamp, duration, meta, compositionTimeOffset) {
+      if (!(data instanceof Uint8Array)) {
+        throw new TypeError("addVideoChunkRaw's first argument (data) must be an instance of Uint8Array.");
+      }
+      if (type !== "key" && type !== "delta") {
+        throw new TypeError("addVideoChunkRaw's second argument (type) must be either 'key' or 'delta'.");
+      }
+      if (!Number.isFinite(timestamp) || timestamp < 0) {
+        throw new TypeError("addVideoChunkRaw's third argument (timestamp) must be a non-negative real number.");
+      }
+      if (!Number.isFinite(duration) || duration < 0) {
+        throw new TypeError("addVideoChunkRaw's fourth argument (duration) must be a non-negative real number.");
+      }
+      if (meta && typeof meta !== "object") {
+        throw new TypeError("addVideoChunkRaw's fifth argument (meta), when provided, must be an object.");
+      }
+      if (compositionTimeOffset !== void 0 && !Number.isFinite(compositionTimeOffset)) {
+        throw new TypeError(
+          "addVideoChunkRaw's sixth argument (compositionTimeOffset), when provided, must be a real number."
+        );
+      }
+      __privateMethod(this, _ensureNotFinalized, ensureNotFinalized_fn).call(this);
+      if (!__privateGet(this, _options).video)
+        throw new Error("No video track declared.");
+      if (typeof __privateGet(this, _options).fastStart === "object" && __privateGet(this, _videoTrack).samples.length === __privateGet(this, _options).fastStart.expectedVideoChunks) {
+        throw new Error(`Cannot add more video chunks than specified in 'fastStart' (${__privateGet(this, _options).fastStart.expectedVideoChunks}).`);
+      }
+      let videoSample = __privateMethod(this, _createSampleForTrack, createSampleForTrack_fn).call(this, __privateGet(this, _videoTrack), data, type, timestamp, duration, meta, compositionTimeOffset);
+      if (__privateGet(this, _options).fastStart === "fragmented" && __privateGet(this, _audioTrack)) {
+        while (__privateGet(this, _audioSampleQueue).length > 0 && __privateGet(this, _audioSampleQueue)[0].decodeTimestamp <= videoSample.decodeTimestamp) {
+          let audioSample = __privateGet(this, _audioSampleQueue).shift();
+          __privateMethod(this, _addSampleToTrack, addSampleToTrack_fn).call(this, __privateGet(this, _audioTrack), audioSample);
+        }
+        if (videoSample.decodeTimestamp <= __privateGet(this, _audioTrack).lastDecodeTimestamp) {
+          __privateMethod(this, _addSampleToTrack, addSampleToTrack_fn).call(this, __privateGet(this, _videoTrack), videoSample);
+        } else {
+          __privateGet(this, _videoSampleQueue).push(videoSample);
+        }
+      } else {
+        __privateMethod(this, _addSampleToTrack, addSampleToTrack_fn).call(this, __privateGet(this, _videoTrack), videoSample);
+      }
+    }
+    addAudioChunk(sample, meta, timestamp) {
+      if (!(sample instanceof EncodedAudioChunk)) {
+        throw new TypeError("addAudioChunk's first argument (sample) must be of type EncodedAudioChunk.");
+      }
+      if (meta && typeof meta !== "object") {
+        throw new TypeError("addAudioChunk's second argument (meta), when provided, must be an object.");
+      }
+      if (timestamp !== void 0 && (!Number.isFinite(timestamp) || timestamp < 0)) {
+        throw new TypeError(
+          "addAudioChunk's third argument (timestamp), when provided, must be a non-negative real number."
+        );
+      }
+      let data = new Uint8Array(sample.byteLength);
+      sample.copyTo(data);
+      this.addAudioChunkRaw(data, sample.type, timestamp ?? sample.timestamp, sample.duration, meta);
+    }
+    addAudioChunkRaw(data, type, timestamp, duration, meta) {
+      if (!(data instanceof Uint8Array)) {
+        throw new TypeError("addAudioChunkRaw's first argument (data) must be an instance of Uint8Array.");
+      }
+      if (type !== "key" && type !== "delta") {
+        throw new TypeError("addAudioChunkRaw's second argument (type) must be either 'key' or 'delta'.");
+      }
+      if (!Number.isFinite(timestamp) || timestamp < 0) {
+        throw new TypeError("addAudioChunkRaw's third argument (timestamp) must be a non-negative real number.");
+      }
+      if (!Number.isFinite(duration) || duration < 0) {
+        throw new TypeError("addAudioChunkRaw's fourth argument (duration) must be a non-negative real number.");
+      }
+      if (meta && typeof meta !== "object") {
+        throw new TypeError("addAudioChunkRaw's fifth argument (meta), when provided, must be an object.");
+      }
+      __privateMethod(this, _ensureNotFinalized, ensureNotFinalized_fn).call(this);
+      if (!__privateGet(this, _options).audio)
+        throw new Error("No audio track declared.");
+      if (typeof __privateGet(this, _options).fastStart === "object" && __privateGet(this, _audioTrack).samples.length === __privateGet(this, _options).fastStart.expectedAudioChunks) {
+        throw new Error(`Cannot add more audio chunks than specified in 'fastStart' (${__privateGet(this, _options).fastStart.expectedAudioChunks}).`);
+      }
+      let audioSample = __privateMethod(this, _createSampleForTrack, createSampleForTrack_fn).call(this, __privateGet(this, _audioTrack), data, type, timestamp, duration, meta);
+      if (__privateGet(this, _options).fastStart === "fragmented" && __privateGet(this, _videoTrack)) {
+        while (__privateGet(this, _videoSampleQueue).length > 0 && __privateGet(this, _videoSampleQueue)[0].decodeTimestamp <= audioSample.decodeTimestamp) {
+          let videoSample = __privateGet(this, _videoSampleQueue).shift();
+          __privateMethod(this, _addSampleToTrack, addSampleToTrack_fn).call(this, __privateGet(this, _videoTrack), videoSample);
+        }
+        if (audioSample.decodeTimestamp <= __privateGet(this, _videoTrack).lastDecodeTimestamp) {
+          __privateMethod(this, _addSampleToTrack, addSampleToTrack_fn).call(this, __privateGet(this, _audioTrack), audioSample);
+        } else {
+          __privateGet(this, _audioSampleQueue).push(audioSample);
+        }
+      } else {
+        __privateMethod(this, _addSampleToTrack, addSampleToTrack_fn).call(this, __privateGet(this, _audioTrack), audioSample);
+      }
+    }
+    /** Finalizes the file, making it ready for use. Must be called after all video and audio chunks have been added. */
+    finalize() {
+      if (__privateGet(this, _finalized)) {
+        throw new Error("Cannot finalize a muxer more than once.");
+      }
+      if (__privateGet(this, _options).fastStart === "fragmented") {
+        for (let videoSample of __privateGet(this, _videoSampleQueue))
+          __privateMethod(this, _addSampleToTrack, addSampleToTrack_fn).call(this, __privateGet(this, _videoTrack), videoSample);
+        for (let audioSample of __privateGet(this, _audioSampleQueue))
+          __privateMethod(this, _addSampleToTrack, addSampleToTrack_fn).call(this, __privateGet(this, _audioTrack), audioSample);
+        __privateMethod(this, _finalizeFragment, finalizeFragment_fn).call(this, false);
+      } else {
+        if (__privateGet(this, _videoTrack))
+          __privateMethod(this, _finalizeCurrentChunk, finalizeCurrentChunk_fn).call(this, __privateGet(this, _videoTrack));
+        if (__privateGet(this, _audioTrack))
+          __privateMethod(this, _finalizeCurrentChunk, finalizeCurrentChunk_fn).call(this, __privateGet(this, _audioTrack));
+      }
+      let tracks = [__privateGet(this, _videoTrack), __privateGet(this, _audioTrack)].filter(Boolean);
+      if (__privateGet(this, _options).fastStart === "in-memory") {
+        let mdatSize;
+        for (let i = 0; i < 2; i++) {
+          let movieBox2 = moov(tracks, __privateGet(this, _creationTime));
+          let movieBoxSize = __privateGet(this, _writer).measureBox(movieBox2);
+          mdatSize = __privateGet(this, _writer).measureBox(__privateGet(this, _mdat));
+          let currentChunkPos = __privateGet(this, _writer).pos + movieBoxSize + mdatSize;
+          for (let chunk of __privateGet(this, _finalizedChunks)) {
+            chunk.offset = currentChunkPos;
+            for (let { data } of chunk.samples) {
+              currentChunkPos += data.byteLength;
+              mdatSize += data.byteLength;
+            }
+          }
+          if (currentChunkPos < 2 ** 32)
+            break;
+          if (mdatSize >= 2 ** 32)
+            __privateGet(this, _mdat).largeSize = true;
+        }
+        let movieBox = moov(tracks, __privateGet(this, _creationTime));
+        __privateGet(this, _writer).writeBox(movieBox);
+        __privateGet(this, _mdat).size = mdatSize;
+        __privateGet(this, _writer).writeBox(__privateGet(this, _mdat));
+        for (let chunk of __privateGet(this, _finalizedChunks)) {
+          for (let sample of chunk.samples) {
+            __privateGet(this, _writer).write(sample.data);
+            sample.data = null;
+          }
+        }
+      } else if (__privateGet(this, _options).fastStart === "fragmented") {
+        let startPos = __privateGet(this, _writer).pos;
+        let mfraBox = mfra(tracks);
+        __privateGet(this, _writer).writeBox(mfraBox);
+        let mfraBoxSize = __privateGet(this, _writer).pos - startPos;
+        __privateGet(this, _writer).seek(__privateGet(this, _writer).pos - 4);
+        __privateGet(this, _writer).writeU32(mfraBoxSize);
+      } else {
+        let mdatPos = __privateGet(this, _writer).offsets.get(__privateGet(this, _mdat));
+        let mdatSize = __privateGet(this, _writer).pos - mdatPos;
+        __privateGet(this, _mdat).size = mdatSize;
+        __privateGet(this, _mdat).largeSize = mdatSize >= 2 ** 32;
+        __privateGet(this, _writer).patchBox(__privateGet(this, _mdat));
+        let movieBox = moov(tracks, __privateGet(this, _creationTime));
+        if (typeof __privateGet(this, _options).fastStart === "object") {
+          __privateGet(this, _writer).seek(__privateGet(this, _ftypSize));
+          __privateGet(this, _writer).writeBox(movieBox);
+          let remainingBytes = mdatPos - __privateGet(this, _writer).pos;
+          __privateGet(this, _writer).writeBox(free(remainingBytes));
+        } else {
+          __privateGet(this, _writer).writeBox(movieBox);
+        }
+      }
+      __privateMethod(this, _maybeFlushStreamingTargetWriter, maybeFlushStreamingTargetWriter_fn).call(this);
+      __privateGet(this, _writer).finalize();
+      __privateSet(this, _finalized, true);
+    }
+  };
+  _options = new WeakMap();
+  _writer = new WeakMap();
+  _ftypSize = new WeakMap();
+  _mdat = new WeakMap();
+  _videoTrack = new WeakMap();
+  _audioTrack = new WeakMap();
+  _creationTime = new WeakMap();
+  _finalizedChunks = new WeakMap();
+  _nextFragmentNumber = new WeakMap();
+  _videoSampleQueue = new WeakMap();
+  _audioSampleQueue = new WeakMap();
+  _finalized = new WeakMap();
+  _validateOptions = new WeakSet();
+  validateOptions_fn = function(options) {
+    if (typeof options !== "object") {
+      throw new TypeError("The muxer requires an options object to be passed to its constructor.");
+    }
+    if (!(options.target instanceof Target)) {
+      throw new TypeError("The target must be provided and an instance of Target.");
+    }
+    if (options.video) {
+      if (!SUPPORTED_VIDEO_CODECS.includes(options.video.codec)) {
+        throw new TypeError(`Unsupported video codec: ${options.video.codec}`);
+      }
+      if (!Number.isInteger(options.video.width) || options.video.width <= 0) {
+        throw new TypeError(`Invalid video width: ${options.video.width}. Must be a positive integer.`);
+      }
+      if (!Number.isInteger(options.video.height) || options.video.height <= 0) {
+        throw new TypeError(`Invalid video height: ${options.video.height}. Must be a positive integer.`);
+      }
+      const videoRotation = options.video.rotation;
+      if (typeof videoRotation === "number" && ![0, 90, 180, 270].includes(videoRotation)) {
+        throw new TypeError(`Invalid video rotation: ${videoRotation}. Has to be 0, 90, 180 or 270.`);
+      } else if (Array.isArray(videoRotation) && (videoRotation.length !== 9 || videoRotation.some((value) => typeof value !== "number"))) {
+        throw new TypeError(`Invalid video transformation matrix: ${videoRotation.join()}`);
+      }
+      if (options.video.frameRate !== void 0 && (!Number.isInteger(options.video.frameRate) || options.video.frameRate <= 0)) {
+        throw new TypeError(
+          `Invalid video frame rate: ${options.video.frameRate}. Must be a positive integer.`
+        );
+      }
+    }
+    if (options.audio) {
+      if (!SUPPORTED_AUDIO_CODECS.includes(options.audio.codec)) {
+        throw new TypeError(`Unsupported audio codec: ${options.audio.codec}`);
+      }
+      if (!Number.isInteger(options.audio.numberOfChannels) || options.audio.numberOfChannels <= 0) {
+        throw new TypeError(
+          `Invalid number of audio channels: ${options.audio.numberOfChannels}. Must be a positive integer.`
+        );
+      }
+      if (!Number.isInteger(options.audio.sampleRate) || options.audio.sampleRate <= 0) {
+        throw new TypeError(
+          `Invalid audio sample rate: ${options.audio.sampleRate}. Must be a positive integer.`
+        );
+      }
+    }
+    if (options.firstTimestampBehavior && !FIRST_TIMESTAMP_BEHAVIORS.includes(options.firstTimestampBehavior)) {
+      throw new TypeError(`Invalid first timestamp behavior: ${options.firstTimestampBehavior}`);
+    }
+    if (typeof options.fastStart === "object") {
+      if (options.video) {
+        if (options.fastStart.expectedVideoChunks === void 0) {
+          throw new TypeError(`'fastStart' is an object but is missing property 'expectedVideoChunks'.`);
+        } else if (!Number.isInteger(options.fastStart.expectedVideoChunks) || options.fastStart.expectedVideoChunks < 0) {
+          throw new TypeError(`'expectedVideoChunks' must be a non-negative integer.`);
+        }
+      }
+      if (options.audio) {
+        if (options.fastStart.expectedAudioChunks === void 0) {
+          throw new TypeError(`'fastStart' is an object but is missing property 'expectedAudioChunks'.`);
+        } else if (!Number.isInteger(options.fastStart.expectedAudioChunks) || options.fastStart.expectedAudioChunks < 0) {
+          throw new TypeError(`'expectedAudioChunks' must be a non-negative integer.`);
+        }
+      }
+    } else if (![false, "in-memory", "fragmented"].includes(options.fastStart)) {
+      throw new TypeError(`'fastStart' option must be false, 'in-memory', 'fragmented' or an object.`);
+    }
+    if (options.minFragmentDuration !== void 0 && (!Number.isFinite(options.minFragmentDuration) || options.minFragmentDuration < 0)) {
+      throw new TypeError(`'minFragmentDuration' must be a non-negative number.`);
+    }
+  };
+  _writeHeader = new WeakSet();
+  writeHeader_fn = function() {
+    __privateGet(this, _writer).writeBox(ftyp({
+      holdsAvc: __privateGet(this, _options).video?.codec === "avc",
+      fragmented: __privateGet(this, _options).fastStart === "fragmented"
+    }));
+    __privateSet(this, _ftypSize, __privateGet(this, _writer).pos);
+    if (__privateGet(this, _options).fastStart === "in-memory") {
+      __privateSet(this, _mdat, mdat(false));
+    } else if (__privateGet(this, _options).fastStart === "fragmented") {
+    } else {
+      if (typeof __privateGet(this, _options).fastStart === "object") {
+        let moovSizeUpperBound = __privateMethod(this, _computeMoovSizeUpperBound, computeMoovSizeUpperBound_fn).call(this);
+        __privateGet(this, _writer).seek(__privateGet(this, _writer).pos + moovSizeUpperBound);
+      }
+      __privateSet(this, _mdat, mdat(true));
+      __privateGet(this, _writer).writeBox(__privateGet(this, _mdat));
+    }
+    __privateMethod(this, _maybeFlushStreamingTargetWriter, maybeFlushStreamingTargetWriter_fn).call(this);
+  };
+  _computeMoovSizeUpperBound = new WeakSet();
+  computeMoovSizeUpperBound_fn = function() {
+    if (typeof __privateGet(this, _options).fastStart !== "object")
+      return;
+    let upperBound = 0;
+    let sampleCounts = [
+      __privateGet(this, _options).fastStart.expectedVideoChunks,
+      __privateGet(this, _options).fastStart.expectedAudioChunks
+    ];
+    for (let n of sampleCounts) {
+      if (!n)
+        continue;
+      upperBound += (4 + 4) * Math.ceil(2 / 3 * n);
+      upperBound += 4 * n;
+      upperBound += (4 + 4 + 4) * Math.ceil(2 / 3 * n);
+      upperBound += 4 * n;
+      upperBound += 8 * n;
+    }
+    upperBound += 4096;
+    return upperBound;
+  };
+  _prepareTracks = new WeakSet();
+  prepareTracks_fn = function() {
+    if (__privateGet(this, _options).video) {
+      __privateSet(this, _videoTrack, {
+        id: 1,
+        info: {
+          type: "video",
+          codec: __privateGet(this, _options).video.codec,
+          width: __privateGet(this, _options).video.width,
+          height: __privateGet(this, _options).video.height,
+          rotation: __privateGet(this, _options).video.rotation ?? 0,
+          decoderConfig: null
+        },
+        // The fallback contains many common frame rates as factors
+        timescale: __privateGet(this, _options).video.frameRate ?? 57600,
+        samples: [],
+        finalizedChunks: [],
+        currentChunk: null,
+        firstDecodeTimestamp: void 0,
+        lastDecodeTimestamp: -1,
+        timeToSampleTable: [],
+        compositionTimeOffsetTable: [],
+        lastTimescaleUnits: null,
+        lastSample: null,
+        compactlyCodedChunkTable: []
+      });
+    }
+    if (__privateGet(this, _options).audio) {
+      __privateSet(this, _audioTrack, {
+        id: __privateGet(this, _options).video ? 2 : 1,
+        info: {
+          type: "audio",
+          codec: __privateGet(this, _options).audio.codec,
+          numberOfChannels: __privateGet(this, _options).audio.numberOfChannels,
+          sampleRate: __privateGet(this, _options).audio.sampleRate,
+          decoderConfig: null
+        },
+        timescale: __privateGet(this, _options).audio.sampleRate,
+        samples: [],
+        finalizedChunks: [],
+        currentChunk: null,
+        firstDecodeTimestamp: void 0,
+        lastDecodeTimestamp: -1,
+        timeToSampleTable: [],
+        compositionTimeOffsetTable: [],
+        lastTimescaleUnits: null,
+        lastSample: null,
+        compactlyCodedChunkTable: []
+      });
+      if (__privateGet(this, _options).audio.codec === "aac") {
+        let guessedCodecPrivate = __privateMethod(this, _generateMpeg4AudioSpecificConfig, generateMpeg4AudioSpecificConfig_fn).call(
+          this,
+          2,
+          // Object type for AAC-LC, since it's the most common
+          __privateGet(this, _options).audio.sampleRate,
+          __privateGet(this, _options).audio.numberOfChannels
+        );
+        __privateGet(this, _audioTrack).info.decoderConfig = {
+          codec: __privateGet(this, _options).audio.codec,
+          description: guessedCodecPrivate,
+          numberOfChannels: __privateGet(this, _options).audio.numberOfChannels,
+          sampleRate: __privateGet(this, _options).audio.sampleRate
+        };
+      }
+    }
+  };
+  _generateMpeg4AudioSpecificConfig = new WeakSet();
+  generateMpeg4AudioSpecificConfig_fn = function(objectType, sampleRate, numberOfChannels) {
+    let frequencyIndices = [96e3, 88200, 64e3, 48e3, 44100, 32e3, 24e3, 22050, 16e3, 12e3, 11025, 8e3, 7350];
+    let frequencyIndex = frequencyIndices.indexOf(sampleRate);
+    let channelConfig = numberOfChannels;
+    let configBits = "";
+    configBits += objectType.toString(2).padStart(5, "0");
+    configBits += frequencyIndex.toString(2).padStart(4, "0");
+    if (frequencyIndex === 15)
+      configBits += sampleRate.toString(2).padStart(24, "0");
+    configBits += channelConfig.toString(2).padStart(4, "0");
+    let paddingLength = Math.ceil(configBits.length / 8) * 8;
+    configBits = configBits.padEnd(paddingLength, "0");
+    let configBytes = new Uint8Array(configBits.length / 8);
+    for (let i = 0; i < configBits.length; i += 8) {
+      configBytes[i / 8] = parseInt(configBits.slice(i, i + 8), 2);
+    }
+    return configBytes;
+  };
+  _createSampleForTrack = new WeakSet();
+  createSampleForTrack_fn = function(track, data, type, timestamp, duration, meta, compositionTimeOffset) {
+    let presentationTimestampInSeconds = timestamp / 1e6;
+    let decodeTimestampInSeconds = (timestamp - (compositionTimeOffset ?? 0)) / 1e6;
+    let durationInSeconds = duration / 1e6;
+    let adjusted = __privateMethod(this, _validateTimestamp, validateTimestamp_fn).call(this, presentationTimestampInSeconds, decodeTimestampInSeconds, track);
+    presentationTimestampInSeconds = adjusted.presentationTimestamp;
+    decodeTimestampInSeconds = adjusted.decodeTimestamp;
+    if (meta?.decoderConfig) {
+      if (track.info.decoderConfig === null) {
+        track.info.decoderConfig = meta.decoderConfig;
+      } else {
+        Object.assign(track.info.decoderConfig, meta.decoderConfig);
+      }
+    }
+    let sample = {
+      presentationTimestamp: presentationTimestampInSeconds,
+      decodeTimestamp: decodeTimestampInSeconds,
+      duration: durationInSeconds,
+      data,
+      size: data.byteLength,
+      type,
+      // Will be refined once the next sample comes in
+      timescaleUnitsToNextSample: intoTimescale(durationInSeconds, track.timescale)
+    };
+    return sample;
+  };
+  _addSampleToTrack = new WeakSet();
+  addSampleToTrack_fn = function(track, sample) {
+    if (__privateGet(this, _options).fastStart !== "fragmented") {
+      track.samples.push(sample);
+    }
+    const sampleCompositionTimeOffset = intoTimescale(sample.presentationTimestamp - sample.decodeTimestamp, track.timescale);
+    if (track.lastTimescaleUnits !== null) {
+      let timescaleUnits = intoTimescale(sample.decodeTimestamp, track.timescale, false);
+      let delta = Math.round(timescaleUnits - track.lastTimescaleUnits);
+      track.lastTimescaleUnits += delta;
+      track.lastSample.timescaleUnitsToNextSample = delta;
+      if (__privateGet(this, _options).fastStart !== "fragmented") {
+        let lastTableEntry = last(track.timeToSampleTable);
+        if (lastTableEntry.sampleCount === 1) {
+          lastTableEntry.sampleDelta = delta;
+          lastTableEntry.sampleCount++;
+        } else if (lastTableEntry.sampleDelta === delta) {
+          lastTableEntry.sampleCount++;
+        } else {
+          lastTableEntry.sampleCount--;
+          track.timeToSampleTable.push({
+            sampleCount: 2,
+            sampleDelta: delta
+          });
+        }
+        const lastCompositionTimeOffsetTableEntry = last(track.compositionTimeOffsetTable);
+        if (lastCompositionTimeOffsetTableEntry.sampleCompositionTimeOffset === sampleCompositionTimeOffset) {
+          lastCompositionTimeOffsetTableEntry.sampleCount++;
+        } else {
+          track.compositionTimeOffsetTable.push({
+            sampleCount: 1,
+            sampleCompositionTimeOffset
+          });
+        }
+      }
+    } else {
+      track.lastTimescaleUnits = 0;
+      if (__privateGet(this, _options).fastStart !== "fragmented") {
+        track.timeToSampleTable.push({
+          sampleCount: 1,
+          sampleDelta: intoTimescale(sample.duration, track.timescale)
+        });
+        track.compositionTimeOffsetTable.push({
+          sampleCount: 1,
+          sampleCompositionTimeOffset
+        });
+      }
+    }
+    track.lastSample = sample;
+    let beginNewChunk = false;
+    if (!track.currentChunk) {
+      beginNewChunk = true;
+    } else {
+      let currentChunkDuration = sample.presentationTimestamp - track.currentChunk.startTimestamp;
+      if (__privateGet(this, _options).fastStart === "fragmented") {
+        let mostImportantTrack = __privateGet(this, _videoTrack) ?? __privateGet(this, _audioTrack);
+        const chunkDuration = __privateGet(this, _options).minFragmentDuration ?? 1;
+        if (track === mostImportantTrack && sample.type === "key" && currentChunkDuration >= chunkDuration) {
+          beginNewChunk = true;
+          __privateMethod(this, _finalizeFragment, finalizeFragment_fn).call(this);
+        }
+      } else {
+        beginNewChunk = currentChunkDuration >= 0.5;
+      }
+    }
+    if (beginNewChunk) {
+      if (track.currentChunk) {
+        __privateMethod(this, _finalizeCurrentChunk, finalizeCurrentChunk_fn).call(this, track);
+      }
+      track.currentChunk = {
+        startTimestamp: sample.presentationTimestamp,
+        samples: []
+      };
+    }
+    track.currentChunk.samples.push(sample);
+  };
+  _validateTimestamp = new WeakSet();
+  validateTimestamp_fn = function(presentationTimestamp, decodeTimestamp, track) {
+    const strictTimestampBehavior = __privateGet(this, _options).firstTimestampBehavior === "strict";
+    const noLastDecodeTimestamp = track.lastDecodeTimestamp === -1;
+    const timestampNonZero = decodeTimestamp !== 0;
+    if (strictTimestampBehavior && noLastDecodeTimestamp && timestampNonZero) {
+      throw new Error(
+        `The first chunk for your media track must have a timestamp of 0 (received DTS=${decodeTimestamp}).Non-zero first timestamps are often caused by directly piping frames or audio data from a MediaStreamTrack into the encoder. Their timestamps are typically relative to the age of thedocument, which is probably what you want.
+
+If you want to offset all timestamps of a track such that the first one is zero, set firstTimestampBehavior: 'offset' in the options.
+`
+      );
+    } else if (__privateGet(this, _options).firstTimestampBehavior === "offset" || __privateGet(this, _options).firstTimestampBehavior === "cross-track-offset") {
+      if (track.firstDecodeTimestamp === void 0) {
+        track.firstDecodeTimestamp = decodeTimestamp;
+      }
+      let baseDecodeTimestamp;
+      if (__privateGet(this, _options).firstTimestampBehavior === "offset") {
+        baseDecodeTimestamp = track.firstDecodeTimestamp;
+      } else {
+        baseDecodeTimestamp = Math.min(
+          __privateGet(this, _videoTrack)?.firstDecodeTimestamp ?? Infinity,
+          __privateGet(this, _audioTrack)?.firstDecodeTimestamp ?? Infinity
+        );
+      }
+      decodeTimestamp -= baseDecodeTimestamp;
+      presentationTimestamp -= baseDecodeTimestamp;
+    }
+    if (decodeTimestamp < track.lastDecodeTimestamp) {
+      throw new Error(
+        `Timestamps must be monotonically increasing (DTS went from ${track.lastDecodeTimestamp * 1e6} to ${decodeTimestamp * 1e6}).`
+      );
+    }
+    track.lastDecodeTimestamp = decodeTimestamp;
+    return { presentationTimestamp, decodeTimestamp };
+  };
+  _finalizeCurrentChunk = new WeakSet();
+  finalizeCurrentChunk_fn = function(track) {
+    if (__privateGet(this, _options).fastStart === "fragmented") {
+      throw new Error("Can't finalize individual chunks if 'fastStart' is set to 'fragmented'.");
+    }
+    if (!track.currentChunk)
+      return;
+    track.finalizedChunks.push(track.currentChunk);
+    __privateGet(this, _finalizedChunks).push(track.currentChunk);
+    if (track.compactlyCodedChunkTable.length === 0 || last(track.compactlyCodedChunkTable).samplesPerChunk !== track.currentChunk.samples.length) {
+      track.compactlyCodedChunkTable.push({
+        firstChunk: track.finalizedChunks.length,
+        // 1-indexed
+        samplesPerChunk: track.currentChunk.samples.length
+      });
+    }
+    if (__privateGet(this, _options).fastStart === "in-memory") {
+      track.currentChunk.offset = 0;
+      return;
+    }
+    track.currentChunk.offset = __privateGet(this, _writer).pos;
+    for (let sample of track.currentChunk.samples) {
+      __privateGet(this, _writer).write(sample.data);
+      sample.data = null;
+    }
+    __privateMethod(this, _maybeFlushStreamingTargetWriter, maybeFlushStreamingTargetWriter_fn).call(this);
+  };
+  _finalizeFragment = new WeakSet();
+  finalizeFragment_fn = function(flushStreamingWriter = true) {
+    if (__privateGet(this, _options).fastStart !== "fragmented") {
+      throw new Error("Can't finalize a fragment unless 'fastStart' is set to 'fragmented'.");
+    }
+    let tracks = [__privateGet(this, _videoTrack), __privateGet(this, _audioTrack)].filter((track) => track && track.currentChunk);
+    if (tracks.length === 0)
+      return;
+    let fragmentNumber = __privateWrapper(this, _nextFragmentNumber)._++;
+    if (fragmentNumber === 1) {
+      let movieBox = moov(tracks, __privateGet(this, _creationTime), true);
+      __privateGet(this, _writer).writeBox(movieBox);
+    }
+    let moofOffset = __privateGet(this, _writer).pos;
+    let moofBox = moof(fragmentNumber, tracks);
+    __privateGet(this, _writer).writeBox(moofBox);
+    {
+      let mdatBox = mdat(false);
+      let totalTrackSampleSize = 0;
+      for (let track of tracks) {
+        for (let sample of track.currentChunk.samples) {
+          totalTrackSampleSize += sample.size;
+        }
+      }
+      let mdatSize = __privateGet(this, _writer).measureBox(mdatBox) + totalTrackSampleSize;
+      if (mdatSize >= 2 ** 32) {
+        mdatBox.largeSize = true;
+        mdatSize = __privateGet(this, _writer).measureBox(mdatBox) + totalTrackSampleSize;
+      }
+      mdatBox.size = mdatSize;
+      __privateGet(this, _writer).writeBox(mdatBox);
+    }
+    for (let track of tracks) {
+      track.currentChunk.offset = __privateGet(this, _writer).pos;
+      track.currentChunk.moofOffset = moofOffset;
+      for (let sample of track.currentChunk.samples) {
+        __privateGet(this, _writer).write(sample.data);
+        sample.data = null;
+      }
+    }
+    let endPos = __privateGet(this, _writer).pos;
+    __privateGet(this, _writer).seek(__privateGet(this, _writer).offsets.get(moofBox));
+    let newMoofBox = moof(fragmentNumber, tracks);
+    __privateGet(this, _writer).writeBox(newMoofBox);
+    __privateGet(this, _writer).seek(endPos);
+    for (let track of tracks) {
+      track.finalizedChunks.push(track.currentChunk);
+      __privateGet(this, _finalizedChunks).push(track.currentChunk);
+      track.currentChunk = null;
+    }
+    if (flushStreamingWriter) {
+      __privateMethod(this, _maybeFlushStreamingTargetWriter, maybeFlushStreamingTargetWriter_fn).call(this);
+    }
+  };
+  _maybeFlushStreamingTargetWriter = new WeakSet();
+  maybeFlushStreamingTargetWriter_fn = function() {
+    if (__privateGet(this, _writer) instanceof StreamTargetWriter) {
+      __privateGet(this, _writer).flush();
+    }
+  };
+  _ensureNotFinalized = new WeakSet();
+  ensureNotFinalized_fn = function() {
+    if (__privateGet(this, _finalized)) {
+      throw new Error("Cannot add new video or audio chunks after the file has been finalized.");
+    }
+  };
+  return __toCommonJS(src_exports);
+})();
+if (typeof module === "object" && typeof module.exports === "object") Object.assign(module.exports, Mp4Muxer)
+
+// ═══════════ DATA ═══════════
+const THEMES=[
+  {id:"gold",label:"Gold",p:"#FFD700",s:"#FF8C00"},
+  {id:"white",label:"White",p:"#FFFFFF",s:"#E0E0E0"},
+  {id:"saffron",label:"Saffron",p:"#FF6B00",s:"#FF3D00"},
+  {id:"rose",label:"Rose",p:"#FF6EB4",s:"#FF1493"},
+  {id:"sky",label:"Sky",p:"#00CFFF",s:"#0090FF"},
+  {id:"emerald",label:"Emerald",p:"#00E888",s:"#00B860"},
+  {id:"silver",label:"Silver",p:"#C0C8D8",s:"#8899AA"},
+  {id:"custom",label:"Custom",p:"#FFD700",s:"#FF8C00"},
 ];
-const TEXT_MODES = [
-  {id:"word",  label:"Word by Word",  desc:"Each word slams in — max engagement 🔥"},
-  {id:"build", label:"Build Up",      desc:"Words appear one by one then reset"},
-  {id:"full",  label:"Full Mantra",   desc:"Whole mantra glows each chant"},
+const TEXT_MODES=[
+  {id:"word",label:"Word by Word",desc:"Each word animates — max engagement 🔥"},
+  {id:"build",label:"Build Up",desc:"Words stack one by one"},
+  {id:"full",label:"Full Mantra",desc:"Whole mantra pulses"},
 ];
-const FONT_SIZES = [
-  {id:"sm", label:"S", counter:44, mantra:18},
-  {id:"md", label:"M", counter:58, mantra:24},
-  {id:"lg", label:"L", counter:72, mantra:32},
-  {id:"xl", label:"XL",counter:88, mantra:42},
+const TEXT_FX=[
+  {id:"slam",icon:"💥",label:"Slam"},
+  {id:"divine",icon:"✨",label:"Divine"},
+  {id:"zoom",icon:"🌟",label:"Zoom"},
+  {id:"flicker",icon:"⚡",label:"Flicker"},
+  {id:"rise",icon:"⬆️",label:"Rise Up"},
+  {id:"fall",icon:"⬇️",label:"Grace Falls"},
+  {id:"fade",icon:"🕯️",label:"Soft Fade"},
 ];
-const PRESETS = [
-  {label:"गणेश",   mantra:"ॐ गं गणपतये नमः"},
-  {label:"शिव",    mantra:"ॐ नमः शिवाय"},
-  {label:"शक्ति", mantra:"ॐ ऐं ह्रीं क्लीं चामुण्डायै विच्चे"},
+const PHOTO_FX=[
+  {id:"none",label:"None"},
+  {id:"zoomin",label:"Zoom In"},
+  {id:"zoomout",label:"Zoom Out"},
+  {id:"panlr",label:"Pan ↔"},
+];
+const FONT_SIZES=[
+  {id:"sm",label:"S",counter:120,mantra:54},
+  {id:"md",label:"M",counter:160,mantra:72},
+  {id:"lg",label:"L",counter:200,mantra:92},
+  {id:"xl",label:"XL",counter:250,mantra:120},
+];
+const PRESETS=[
+  {label:"गणेश",mantra:"ॐ गं गणपतये नमः"},
+  {label:"शिव",mantra:"ॐ नमः शिवाय"},
+  {label:"शक्ति",mantra:"ॐ ऐं ह्रीं क्लीं चामुण्डायै विच्चे"},
   {label:"विष्णु",mantra:"ॐ नमो भगवते वासुदेवाय"},
   {label:"सरस्वती",mantra:"ॐ ऐं सरस्वत्यै नमः"},
   {label:"लक्ष्मी",mantra:"ॐ श्रीं ह्रीं श्रीं महालक्ष्म्यै नमः"},
-  {label:"राम",    mantra:"ॐ श्री राम जय राम जय जय राम"},
-  {label:"कृष्ण", mantra:"ॐ क्लीं कृष्णाय नमः"},
+  {label:"राम",mantra:"ॐ श्री राम जय राम जय जय राम"},
+  {label:"कृष्ण",mantra:"ॐ क्लीं कृष्णाय नमः"},
   {label:"दुर्गा",mantra:"ॐ दुं दुर्गायै नमः"},
   {label:"हनुमान",mantra:"ॐ हं हनुमते नमः"},
 ];
-const WM_POS = [{id:"tl",label:"↖"},{id:"tr",label:"↗"},{id:"bl",label:"↙"},{id:"br",label:"↘"}];
-const L = {
-  ne:{title:"मन्त्र जप काउन्टर",sub:"सनातन धर्म टक",deity:"देवता",deityPh:"जस्तै: श्री गणेश...",mantra:"मन्त्र",mantraPh:"मन्त्र यहाँ टाइप गर्नुस्...",presets:"छिटो छनोट",images:"देवताको फोटोहरू",imageHint:"फोटोहरू छान्नुस् (एक वा बढी)",logo:"विधि चक्र लोगो",logoHint:"लोगो अपलोड गर्नुस्",count:"जप संख्या",custom:"अन्य संख्या...",japSpeed:"जप गति",imgSpeed:"फोटो गति",colorTheme:"रंग थिम",textMode:"टेक्स्ट प्रकार",fontSize:"अक्षर आकार",start:"जप सुरु गर्नुस् ✦",enterMantra:"मन्त्र लेख्नुस्...",jap:"जप",mala:"माला",tapHint:"छुनुस्",autoStart:"AUTO-START",autoHint:"खुलेसँगै सुरु हुन्छ",wmPos:"लोगो स्थान"},
-  hi:{title:"मंत्र जप काउंटर",sub:"सनातन धर्म टॉक",deity:"देवता",deityPh:"जैसे: श्री गणेश...",mantra:"मंत्र",mantraPh:"मंत्र यहाँ लिखें...",presets:"त्वरित चयन",images:"देवता की छवियाँ",imageHint:"फ़ोटो अपलोड करें",logo:"विधि चक्र लोगो",logoHint:"लोगो अपलोड करें",count:"जप संख्या",custom:"अन्य संख्या...",japSpeed:"जप गति",imgSpeed:"छवि गति",colorTheme:"रंग थीम",textMode:"टेक्स्ट प्रकार",fontSize:"फ़ॉन्ट आकार",start:"जप आरंभ करें ✦",enterMantra:"मंत्र दर्ज करें...",jap:"जप",mala:"माला",tapHint:"छुएं",autoStart:"AUTO-START",autoHint:"खुलते ही शुरू होगा",wmPos:"लोगो स्थान"},
+const WM_POS=[{id:"tl",label:"↖"},{id:"tr",label:"↗"},{id:"bl",label:"↙"},{id:"br",label:"↘"}];
+const STR={
+  ne:{title:"मन्त्र जप काउन्टर",sub:"सनातन धर्म टक",deity:"देवता",deityPh:"जस्तै: श्री गणेश...",mantra:"मन्त्र",mantraPh:"मन्त्र यहाँ टाइप गर्नुस्...",presets:"छिटो छनोट",images:"देवताको फोटोहरू",imageHint:"फोटोहरू छान्नुस्",photoFx:"फोटो एनिमेसन",logo:"विधि चक्र लोगो",logoHint:"लोगो अपलोड गर्नुस्",audio:"मन्त्र अडियो क्लिप",audioHint:"एक पटक जप गरिएको क्लिप — काउन्टर स्वतः सिंक हुन्छ",audioRemove:"हटाउनुस्",count:"जप संख्या",custom:"अन्य...",japSpeed:"जप गति",imgSpeed:"फोटो गति",colorTheme:"रंग थिम",textMode:"टेक्स्ट प्रकार",textFx:"टेक्स्ट इफेक्ट",fontSize:"अक्षर आकार",showCounter:"काउन्टर देखाउनुस्",showCounterHint:"रिङ र नम्बर",start:"प्रिभ्यू ✦",enterMantra:"मन्त्र लेख्नुस्...",jap:"जप",mala:"माला",autoStart:"AUTO-START",autoHint:"खुलेसँगै सुरु",wmPos:"लोगो स्थान",save:"सेभ गर्नुस्",load:"लोड",presetTitle:"सेभ गरिएका",smartDetect:"स्मार्ट टाइमर"},
+  hi:{title:"मंत्र जप काउंटर",sub:"सनातन धर्म टॉक",deity:"देवता",deityPh:"जैसे: श्री गणेश...",mantra:"मंत्र",mantraPh:"मंत्र यहाँ लिखें...",presets:"त्वरित चयन",images:"देवता की छवियाँ",imageHint:"फ़ोटो अपलोड करें",photoFx:"फ़ोटो एनिमेशन",logo:"विधि चक्र लोगो",logoHint:"लोगो अपलोड करें",audio:"मंत्र ऑडियो क्लिप",audioHint:"एक बार जप किया क्लिप — काउंटर अपने आप सिंक होगा",audioRemove:"हटाएं",count:"जप संख्या",custom:"अन्य...",japSpeed:"जप गति",imgSpeed:"छवि गति",colorTheme:"रंग थीम",textMode:"टेक्स्ट प्रकार",textFx:"टेक्स्ट इफ़ेक्ट",fontSize:"फ़ॉन्ट आकार",showCounter:"काउंटर दिखाएं",showCounterHint:"रिंग और नंबर",start:"प्रीव्यू ✦",enterMantra:"मंत्र दर्ज करें...",jap:"जप",mala:"माला",autoStart:"AUTO-START",autoHint:"खुलते ही शुरू",wmPos:"लोगो स्थान",save:"सेव करें",load:"लोड",presetTitle:"सेव किए गए",smartDetect:"स्मार्ट टाइमर"},
 };
 
-// Setup state
-let sLang="ne", sMantra="", sDeity="", sCount=11, sCustom="", sImages=[], sLogoSrc=null;
-let sWmPos="tr", sSpeed=5, sImgInt=6, sAuto=true, sThemeId="gold", sCustomClr="#FFD700";
-let sTextMode="word", sFontSize="lg";
+// ═══════════ STATE ═══════════
+let sLang="ne",sMantra="",sDeity="",sCount=11,sCustom="",sImages=[],sLogoSrc=null;
+let sWmPos="tr",sSpeed=4,sImgInt=6,sAuto=true,sThemeId="gold",sCustomClr="#FFD700";
+let sTextMode="word",sFontSize="lg",sShowCounter=true,sTextFx="slam",sPhotoFx="zoomin";
+let sAudioSrc=null,sAudioName="",sAudioDuration=0;
+const imageObjs=[];
+let logoObj=null;
 
-// Counter state
-let cRunning=false, cN=0, cMalas=0, cImgIdx=0, cPrevIdx=null, cCountdown=null;
-let japTimer=null, imgTimer=null, cdTimer=null, ctrlTimer=null, wordTimer=null, buildTimer=null;
-let cWords=[], cWordIdx=0, cShown=1;
-let ctrlVisible=false;
-
-// ══════════════════════════════════════════════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════════════════════════════════════════════
+const el=id=>document.getElementById(id);
+const b64=f=>new Promise(r=>{const x=new FileReader();x.onload=e=>r(e.target.result);x.readAsDataURL(f);});
 function hex2rgb(h){return{r:parseInt(h.slice(1,3),16),g:parseInt(h.slice(3,5),16),b:parseInt(h.slice(5,7),16)};}
-function glowC(h,a=0.65){const{r,g,b}=hex2rgb(h);return`rgba(${r},${g},${b},${a})`;}
-function darkC(h,f=0.6){const{r,g,b}=hex2rgb(h);return`rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b*f)})`;}
-function getTheme(){
-  const base=THEMES.find(t=>t.id===sThemeId)||THEMES[0];
-  if(sThemeId==="custom") return{...base,p:sCustomClr,s:darkC(sCustomClr,0.75)};
-  return base;
-}
-function getFS(){return FONT_SIZES.find(f=>f.id===sFontSize)||FONT_SIZES[1];}
-function el(id){return document.getElementById(id);}
-function b64(file){return new Promise(r=>{const x=new FileReader();x.onload=e=>r(e.target.result);x.readAsDataURL(file);});}
+function gC(h,a=0.65){const{r,g,b}=hex2rgb(h);return`rgba(${r},${g},${b},${a})`;}
+function dC(h,f=0.6){const{r,g,b}=hex2rgb(h);return`rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b*f)})`;}
+function theme(){const base=THEMES.find(t=>t.id===sThemeId)||THEMES[0];return sThemeId==="custom"?{...base,p:sCustomClr,s:dC(sCustomClr,0.75)}:base;}
+function fsz(){return FONT_SIZES.find(f=>f.id===sFontSize)||FONT_SIZES[1];}
+function lang(){return STR[sLang];}
+function totalN(){return sCustom&&parseInt(sCustom)>0?parseInt(sCustom):sCount;}
+function cWords(){return sMantra.trim().split(/\s+/).filter(Boolean);}
 
-// ══════════════════════════════════════════════════════════════════════════════
-// SETUP RENDER
-// ══════════════════════════════════════════════════════════════════════════════
+function estimateMantraSeconds(m){
+  if(!m)return 4;
+  const chars=[...m.replace(/\s/g,'')];
+  let syll=0;
+  for(const ch of chars){const c=ch.codePointAt(0);if((c>=0x0915&&c<=0x0939)||(c>=0x0905&&c<=0x0914))syll++;}
+  if(syll===0)syll=m.split(/\s+/).length*2;
+  return Math.max(2,Math.min(15,Math.round(syll*0.55)));
+}
+
+// ═══════════ PRESETS ═══════════
+function savedPresets(){try{return JSON.parse(localStorage.getItem('vc_presets')||'[]');}catch{return[];}}
+function savePreset(){
+  const name=prompt("Preset name (e.g. 'Ganesh Reel'):","");
+  if(!name||!name.trim())return;
+  const p={name:name.trim(),ts:Date.now(),sMantra,sDeity,sCount,sCustom,sWmPos,sSpeed,sImgInt,sAuto,sThemeId,sCustomClr,sTextMode,sFontSize,sShowCounter,sTextFx,sPhotoFx,sLang};
+  const all=savedPresets();all.unshift(p);
+  localStorage.setItem('vc_presets',JSON.stringify(all.slice(0,20)));renderSetup();
+}
+function loadPreset(i){const p=savedPresets()[i];if(!p)return;({sMantra,sDeity,sCount,sCustom,sWmPos,sSpeed,sImgInt,sAuto,sThemeId,sCustomClr,sTextMode,sFontSize,sShowCounter,sTextFx,sLang}=p);sPhotoFx=p.sPhotoFx||"zoomin";renderSetup();}
+function deletePreset(i){if(!confirm("Delete?"))return;const all=savedPresets();all.splice(i,1);localStorage.setItem('vc_presets',JSON.stringify(all));renderSetup();}
+
+// ═══════════ AUDIO + SYNC SCANNER ═══════════
+let sAudioFile=null;          // raw File for decoding
+let sSyncPeriod=0;            // detected/chosen seconds per mantra
+let sSyncOffset=0;            // when the first mantra starts
+let anEnv=null;               // energy envelope (Float32Array)
+let anFlux=null;              // onset flux
+let anFrameDur=0;             // seconds per envelope frame
+let anCandidates=[];          // [{sec,val}]
+let anScanning=false;
+let anDone=false;
+let audioCtx=null;
+function getAC(){if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+
+function handleAudioFile(inp){
+  const f=inp.files[0];if(!f)return;
+  sAudioFile=f;
+  const url=URL.createObjectURL(f);
+  sAudioSrc=url;sAudioName=f.name;
+  sSyncPeriod=0;sSyncOffset=0;anDone=false;anCandidates=[];anEnv=null;
+  const a=el('bhajan-audio');a.src=url;
+  a.addEventListener('loadedmetadata',function once(){
+    sAudioDuration=a.duration||0;
+    renderSetup();
+    scanAudio();   // auto-scan on upload
+  },{once:true});
+  renderSetup();
+}
+function clearAudio(){
+  if(sAudioSrc&&sAudioSrc.startsWith('blob:'))URL.revokeObjectURL(sAudioSrc);
+  sAudioSrc=null;sAudioName="";sAudioDuration=0;sAudioFile=null;
+  sSyncPeriod=0;sSyncOffset=0;anEnv=null;anFlux=null;anCandidates=[];anDone=false;
+  el('bhajan-audio').src='';renderSetup();
+}
+
+// ── Scan: decode → envelope → autocorrelation → period + offset ──
+async function scanAudio(){
+  if(!sAudioFile||anScanning)return;
+  anScanning=true;anDone=false;renderSetup();
+  try{
+    const ac=getAC();
+    const buf=await sAudioFile.arrayBuffer();
+    const audioBuf=await ac.decodeAudioData(buf.slice(0));
+    const sr=audioBuf.sampleRate;
+    // mono downmix
+    let data=audioBuf.getChannelData(0);
+    if(audioBuf.numberOfChannels>1){
+      const c2=audioBuf.getChannelData(1);
+      const m=new Float32Array(data.length);
+      for(let i=0;i<data.length;i++)m[i]=(data[i]+c2[i])*0.5;
+      data=m;
+    }
+    // RMS envelope
+    const hop=1024;
+    const n=Math.floor(data.length/hop);
+    const env=new Float32Array(n);
+    for(let i=0;i<n;i++){
+      let s=0;const base=i*hop;
+      for(let j=0;j<hop;j++){const v=data[base+j];s+=v*v;}
+      env[i]=Math.sqrt(s/hop);
+    }
+    // light smoothing (3-tap)
+    const sm=new Float32Array(n);
+    for(let i=0;i<n;i++){
+      const a1=env[Math.max(0,i-1)],b1=env[i],c1=env[Math.min(n-1,i+1)];
+      sm[i]=(a1+b1+c1)/3;
+    }
+    anEnv=sm;
+    anFrameDur=hop/sr;
+    // onset flux
+    const flux=new Float32Array(n);
+    for(let i=1;i<n;i++)flux[i]=Math.max(0,sm[i]-sm[i-1]);
+    anFlux=flux;
+
+    // ── autocorrelation of the envelope ──
+    let mean=0;for(let i=0;i<n;i++)mean+=sm[i];mean/=n;
+    const e=new Float32Array(n);
+    for(let i=0;i<n;i++)e[i]=sm[i]-mean;
+    let power=0;for(let i=0;i<n;i++)power+=e[i]*e[i];
+    const perSample=power/n||1e-9;
+    const minLag=Math.max(2,Math.floor(0.55/anFrameDur));
+    const maxLag=Math.min(Math.floor(20/anFrameDur),Math.floor(n*0.6));
+    const acr=new Float32Array(maxLag+1);
+    for(let lag=minLag;lag<=maxLag;lag++){
+      let s=0;const lim=n-lag;
+      for(let i=0;i<lim;i++)s+=e[i]*e[i+lag];
+      acr[lag]=(s/lim)/perSample;   // unbiased normalization
+    }
+    // strongest local peak near a target time
+    function peakNear(sec,tolFrac){
+      const lag=Math.round(sec/anFrameDur);
+      if(lag<minLag||lag>maxLag)return null;
+      const win=Math.max(1,Math.round(lag*tolFrac));
+      let bv=-9,bl=lag;
+      for(let l=Math.max(minLag,lag-win);l<=Math.min(maxLag,lag+win);l++){
+        if(acr[l]>bv){bv=acr[l];bl=l;}
+      }
+      return {sec:bl*anFrameDur,val:bv};
+    }
+
+    // ── STEP 1: dominant repeating structure (comb over plausible range) ──
+    let dom=null;
+    for(let sec=0.9;sec<=Math.min(10,sAudioDuration/3);sec+=0.01){
+      let s=0,used=0;
+      for(let k=1;k<=4;k++){
+        const p=peakNear(sec*k,0.04);
+        if(!p)break;
+        const w=[1,0.7,0.5,0.35][k-1];
+        s+=w*p.val;used+=w;
+      }
+      if(used<1)continue;
+      const sc=s/used;
+      if(!dom||sc>dom.score)dom={sec,score:sc};
+    }
+    if(!dom)dom={sec:Math.min(4,sAudioDuration||4),score:0};
+    const domPeak=peakNear(dom.sec,0.03)||{sec:dom.sec,val:0.1};
+
+    // ── STEP 2: subdivide to the true single-mantra pulse ──
+    // The dominant structure is often a musical PHRASE of several chants.
+    // Take the smallest subdivision that still shows a strong peak.
+    let period=domPeak.sec;
+    for(let k=8;k>=2;k--){
+      const target=domPeak.sec/k;
+      if(target<0.55)continue;
+      const p=peakNear(target,0.06);
+      if(!p)continue;
+      if(p.val>0.05 && p.val>=domPeak.val*0.6){period=p.sec;break;}
+    }
+
+    // ── Short clip = the file itself is ONE mantra that loops ──
+    if(sAudioDuration>0&&sAudioDuration<=12){
+      period=sAudioDuration;
+      const cs=[];
+      for(const k of [1,2,3,4]){
+        const s=Math.round(sAudioDuration/k*100)/100;
+        if(s>=0.5&&!cs.some(q=>Math.abs(q.sec-s)<0.1))cs.push({sec:s,val:0});
+      }
+      anCandidates=cs;
+      sSyncPeriod=Math.round(period*100)/100;
+      sSyncOffset=0;
+      anDone=true;
+      anScanning=false;
+      renderSetup();
+      setTimeout(drawWaveform,50);
+      return;
+    }
+
+    // ── Candidates to offer: the pulse and its groupings ──
+    const cset=[];
+    for(const k of [1,2,3,4,6,8]){
+      const s=Math.round(period*k*100)/100;
+      if(s<=Math.max(20,sAudioDuration)&&!cset.some(q=>Math.abs(q.sec-s)<0.15)){
+        const pk=peakNear(s,0.03);
+        cset.push({sec:s,val:pk?pk.val:0});
+      }
+    }
+    anCandidates=cset.slice(0,6);
+    sSyncPeriod=Math.round(period*100)/100;
+    sSyncOffset=findOffset(sSyncPeriod);
+    anDone=true;
+  }catch(err){
+    console.log('scan error',err);
+    alert('Could not analyze this audio file.\n\nTry a different format (MP3/WAV/M4A), or set the timing manually.');
+  }
+  anScanning=false;
+  renderSetup();
+  setTimeout(drawWaveform,50);
+}
+
+// Find where the first mantra starts: the phase that best lines up with onset energy
+function findOffset(period){
+  if(!anFlux||!period)return 0;
+  const Pf=Math.max(1,Math.round(period/anFrameDur));
+  const n=anFlux.length;
+  let bestO=0,bestScore=-1;
+  for(let o=0;o<Pf;o++){
+    let s=0,c=0;
+    for(let k=o;k<n;k+=Pf){s+=anFlux[k];c++;}
+    if(c===0)continue;
+    const score=s/c;
+    if(score>bestScore){bestScore=score;bestO=o;}
+  }
+  return Math.round(bestO*anFrameDur*100)/100;
+}
+function repickOffset(){sSyncOffset=findOffset(sSyncPeriod);renderSetup();setTimeout(drawWaveform,50);}
+
+// ── Waveform + tick overlay ──
+function drawWaveform(){
+  const cv=el('wave-cv');
+  if(!cv||!anEnv)return;
+  const P=theme().p;
+  const dpr=window.devicePixelRatio||1;
+  const cssW=cv.clientWidth||360,cssH=110;
+  cv.width=cssW*dpr;cv.height=cssH*dpr;
+  cv.style.height=cssH+'px';
+  const c=cv.getContext('2d');
+  c.setTransform(dpr,0,0,dpr,0,0);
+  c.clearRect(0,0,cssW,cssH);
+  c.fillStyle='rgba(255,255,255,0.03)';c.fillRect(0,0,cssW,cssH);
+
+  // show a window: 4 periods (or 12s) so ticks are clearly visible
+  const winSec=Math.min(sAudioDuration||12,Math.max(8,(sSyncPeriod||4)*4));
+  const frames=Math.min(anEnv.length,Math.floor(winSec/anFrameDur));
+  let mx=0.0001;for(let i=0;i<frames;i++)mx=Math.max(mx,anEnv[i]);
+
+  // envelope
+  c.beginPath();
+  for(let x=0;x<cssW;x++){
+    const fi=Math.floor(x/cssW*frames);
+    const v=anEnv[fi]/mx;
+    const y=cssH-4-v*(cssH-16);
+    if(x===0)c.moveTo(x,y);else c.lineTo(x,y);
+  }
+  c.strokeStyle=gC(P,0.55);c.lineWidth=1.5;c.stroke();
+  c.lineTo(cssW,cssH);c.lineTo(0,cssH);c.closePath();
+  c.fillStyle=gC(P,0.10);c.fill();
+
+  // tick lines at offset + k*period
+  if(sSyncPeriod>0){
+    let k=0;
+    while(true){
+      const t=sSyncOffset+k*sSyncPeriod;
+      if(t>winSec)break;
+      if(t>=0){
+        const x=t/winSec*cssW;
+        c.beginPath();c.moveTo(x,0);c.lineTo(x,cssH);
+        c.strokeStyle=k===0?'#4ade80':gC(P,0.85);
+        c.lineWidth=k===0?2.5:1.8;c.stroke();
+        c.fillStyle=k===0?'#4ade80':gC(P,0.85);
+        c.beginPath();c.arc(x,7,4,0,Math.PI*2);c.fill();
+      }
+      k++;
+      if(k>60)break;
+    }
+  }
+  // legend
+  c.fillStyle='rgba(255,255,255,0.35)';
+  c.font='10px monospace';
+  c.fillText('0s',3,cssH-3);
+  c.textAlign='right';c.fillText(winSec.toFixed(1)+'s',cssW-3,cssH-3);
+  c.textAlign='left';
+}
+
+// ── Audition: play audio with a click at every tick ──
+let auditionStop=null;
+function testSync(){
+  if(auditionStop){auditionStop();return;}
+  const ac=getAC();
+  if(ac.state==='suspended')ac.resume();
+  const audio=el('bhajan-audio');
+  audio.currentTime=0;
+  audio.play().catch(()=>{});
+  const t0=ac.currentTime+0.08;
+  const limit=Math.min(sAudioDuration||20,20);
+  const oscs=[];
+  for(let t=sSyncOffset;t<limit;t+=sSyncPeriod){
+    if(t<0)continue;
+    const osc=ac.createOscillator(),g=ac.createGain();
+    osc.frequency.value=1400;osc.type='sine';
+    const at=t0+t;
+    g.gain.setValueAtTime(0.0001,at);
+    g.gain.exponentialRampToValueAtTime(0.35,at+0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001,at+0.07);
+    osc.connect(g);g.connect(ac.destination);
+    osc.start(at);osc.stop(at+0.09);
+    oscs.push(osc);
+  }
+  const btn=el('test-btn');
+  if(btn){btn.textContent='⏹ Stop test';btn.style.background='rgba(255,100,100,0.15)';}
+  auditionStop=()=>{
+    oscs.forEach(o=>{try{o.stop();}catch(e){}});
+    audio.pause();audio.currentTime=0;
+    const b=el('test-btn');
+    if(b){b.textContent='🔊 Test sync (audio + click)';b.style.background='';}
+    auditionStop=null;
+  };
+  setTimeout(()=>{if(auditionStop)auditionStop();},limit*1000+300);
+}
+
+// ── Manual fine-tune ──
+function nudgePeriod(d){
+  sSyncPeriod=Math.max(0.5,Math.round((sSyncPeriod+d)*100)/100);
+  renderSetup();setTimeout(drawWaveform,50);
+}
+function nudgeOffset(d){
+  sSyncOffset=Math.round((sSyncOffset+d)*100)/100;
+  renderSetup();setTimeout(drawWaveform,50);
+}
+function pickCandidate(sec){
+  sSyncPeriod=Math.round(sec*100)/100;
+  sSyncOffset=findOffset(sSyncPeriod);
+  renderSetup();setTimeout(drawWaveform,50);
+}
+
+// ── Tap-to-mark fallback ──
+let tapTimes=[];
+function tapBeat(){
+  const audio=el('bhajan-audio');
+  if(audio.paused){audio.currentTime=0;audio.play().catch(()=>{});tapTimes=[];}
+  tapTimes.push(audio.currentTime);
+  if(tapTimes.length>=2){
+    const iv=[];
+    for(let i=1;i<tapTimes.length;i++)iv.push(tapTimes[i]-tapTimes[i-1]);
+    iv.sort((a,b)=>a-b);
+    const med=iv[Math.floor(iv.length/2)];
+    sSyncPeriod=Math.round(med*100)/100;
+    sSyncOffset=Math.round(tapTimes[0]*100)/100;
+  }
+  const b=el('tap-btn');
+  if(b)b.textContent=`👆 Tapped ${tapTimes.length}× ${sSyncPeriod?'— '+sSyncPeriod.toFixed(2)+'s':''}`;
+  renderSetup2Wave();
+}
+function renderSetup2Wave(){setTimeout(drawWaveform,30);}
+function resetTaps(){tapTimes=[];el('bhajan-audio').pause();renderSetup();}
+
+// ═══════════ IMAGES ═══════════
+function loadImageObj(src){return new Promise(res=>{const img=new Image();img.onload=()=>res(img);img.onerror=()=>res(null);img.src=src;});}
+async function addImages(inp){
+  const files=Array.from(inp.files);
+  for(const f of files){const src=await b64(f);sImages.push(src);const o=await loadImageObj(src);imageObjs.push(o);}
+  renderSetup();
+}
+function removeImg(i){sImages.splice(i,1);imageObjs.splice(i,1);renderSetup();}
+async function setLogo(inp){if(inp.files[0]){sLogoSrc=await b64(inp.files[0]);logoObj=await loadImageObj(sLogoSrc);renderSetup();}}
+
+// ═══════════ CANVAS ENGINE ═══════════
+const W=1080,H=1920;
+let ctx=null,rafId=null,playing=false;
+let startClock=0,pausedAt=0,totalElapsed=0;
+let petals=[],lastBurstJap=-1;
+
+const easeOutBack=t=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);};
+const easeOut=t=>1-Math.pow(1-t,3);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+// One jap = the scanned/locked sync period when audio is loaded, else the slider value
+function japDur(){
+  if(sAudioSrc&&sSyncPeriod>0.3)return sSyncPeriod;
+  return sSpeed;
+}
+function syncOffset(){return (sAudioSrc&&sSyncPeriod>0.3)?sSyncOffset:0;}
+
+function startPlayer(){
+  if(!sMantra.trim())return;
+  sDeity=el('inp-deity')?el('inp-deity').value:sDeity;
+  sMantra=el('inp-mantra')?el('inp-mantra').value:sMantra;
+  if(!sMantra.trim())return;
+  el('setup').style.display='none';
+  el('sticky-bar').style.display='none';
+  el('player').style.display='flex';
+  ctx=el('cv').getContext('2d');
+  totalElapsed=0;pausedAt=0;petals=[];lastBurstJap=-1;
+  if(sAudioSrc)el('bhajan-audio').currentTime=0;
+  fitCanvas();
+  drawFrame(0);
+  if(sAuto)play();else{playing=false;showPC();}
+  updatePCPlay();
+}
+function fitCanvas(){
+  const cv=el('cv');
+  const scale=Math.min(window.innerWidth/W,window.innerHeight/H);
+  cv.style.width=(W*scale)+'px';cv.style.height=(H*scale)+'px';
+}
+window.addEventListener('resize',()=>{if(el('player').style.display==='flex')fitCanvas();});
+
+let audioLoops=0,lastAudioTime=0;
+
+function play(){
+  playing=true;
+  startClock=performance.now()/1000-pausedAt;
+  if(sAudioSrc){
+    const a=el('bhajan-audio');
+    a.play().catch(()=>{});
+  }
+  loop();updatePCPlay();
+}
+function pause(){
+  playing=false;pausedAt=totalElapsed;
+  if(sAudioSrc)el('bhajan-audio').pause();
+  if(rafId)cancelAnimationFrame(rafId);
+  updatePCPlay();
+}
+function togglePlay(e){if(e)e.stopPropagation();playing?pause():play();showPC();}
+function resetPlayer(e){
+  if(e)e.stopPropagation();pause();
+  totalElapsed=0;pausedAt=0;petals=[];lastBurstJap=-1;
+  audioLoops=0;lastAudioTime=0;
+  if(sAudioSrc)el('bhajan-audio').currentTime=0;
+  drawFrame(0);showPC();
+}
+
+// THE KEY: when audio is loaded, the AUDIO is the clock.
+// The counter reads its position directly, so they physically cannot drift.
+function loop(){
+  if(!playing)return;
+  const a=el('bhajan-audio');
+  if(sAudioSrc&&sSyncPeriod>0.3&&!a.paused&&sAudioDuration>0){
+    const ct=a.currentTime;
+    if(ct<lastAudioTime-0.5)audioLoops++;   // file looped back to start
+    lastAudioTime=ct;
+    totalElapsed=audioLoops*sAudioDuration+ct;
+    pausedAt=totalElapsed;
+  } else {
+    totalElapsed=performance.now()/1000-startClock;
+  }
+  drawFrame(totalElapsed);
+  rafId=requestAnimationFrame(loop);
+}
+
+// ═══════════ drawFrame(t): fully deterministic ═══════════
+function drawFrame(t){
+  if(!ctx)return;
+  const T=theme(),P=T.p,S=T.s;
+  const jd=japDur();
+  const tAdj=Math.max(0,t-syncOffset());   // wait for the first mantra to begin
+  const japIndex=Math.floor(tAdj/jd);
+  const inJap=(tAdj%jd)/jd;
+  const total=totalN();
+  const curN=japIndex%total;
+  const malas=Math.floor(japIndex/total);
+  const words=cWords();
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#060300";ctx.fillRect(0,0,W,H);
+
+  // Deity image + Ken Burns
+  if(imageObjs.length>0){
+    const idx=imageObjs.length>1?Math.floor(t/sImgInt)%imageObjs.length:0;
+    const img=imageObjs[idx];
+    if(img){
+      const prog=(t%sImgInt)/sImgInt;
+      drawKenBurns(img,prog);
+      // crossfade next image in last 0.8s
+      if(imageObjs.length>1){
+        const fadeT=(t%sImgInt);
+        if(fadeT>sImgInt-0.8){
+          const nxt=imageObjs[(idx+1)%imageObjs.length];
+          if(nxt){ctx.save();ctx.globalAlpha=(fadeT-(sImgInt-0.8))/0.8*0.85;drawKenBurnsRaw(nxt,0);ctx.restore();}
+        }
+      }
+    }
+  }
+  // gradient
+  const grad=ctx.createLinearGradient(0,0,0,H);
+  if(imageObjs.length>0){
+    grad.addColorStop(0,"rgba(6,3,0,0.05)");grad.addColorStop(0.4,"rgba(6,3,0,0.08)");
+    grad.addColorStop(0.60,"rgba(6,3,0,0.72)");grad.addColorStop(1,"rgba(6,3,0,0.97)");
+  }else{grad.addColorStop(0,"rgba(10,5,0,0.4)");grad.addColorStop(1,"rgba(6,3,0,0.6)");}
+  ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+
+  updateAndDrawPetals(t,P,S);
+
+  // mala completion burst
+  if(japIndex>0&&curN===0&&japIndex!==lastBurstJap&&inJap<0.5){lastBurstJap=japIndex;}
+  if(lastBurstJap>0){
+    const burstStart=lastBurstJap*jd;
+    const bt=(t-burstStart)/0.8;
+    if(bt>=0&&bt<1){
+      ctx.save();ctx.globalAlpha=1-bt;
+      ctx.strokeStyle=P;ctx.lineWidth=5;ctx.shadowColor=P;ctx.shadowBlur=30;
+      ctx.beginPath();ctx.arc(W/2,H*0.60,140+bt*420,0,Math.PI*2);ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  drawWatermark(P);
+  if(sImages.length>1)drawImgDots(Math.floor(t/sImgInt)%sImages.length,P);
+
+  if(sShowCounter){
+    const ringCY=H*0.62;
+    drawRing(W/2,ringCY,curN,total,inJap,P,S,t);
+    drawCounterNumber(W/2,ringCY,curN,total,inJap,P,t);
+    drawMantra(W/2,H*0.38,t,inJap,curN,words,P,S);
+    if(malas>0)drawMala(W/2,ringCY+310,malas,S);
+    drawOm(W/2,H*0.26,t,P);
+    if(sDeity)drawDeity(W/2,H*0.26+90,P);
+  } else {
+    drawMantra(W/2,H*0.55,t,inJap,curN,words,P,S);
+    drawOm(W/2,H*0.38,t,P);
+    if(sDeity)drawDeity(W/2,H*0.38+95,P);
+  }
+}
+
+// ═══════════ DRAW HELPERS ═══════════
+function drawKenBurnsRaw(img,prog){
+  const ir=img.width/img.height,cr=W/H;
+  let dw,dh;
+  if(ir>cr){dh=H;dw=H*ir;}else{dw=W;dh=W/ir;}
+  ctx.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);
+}
+function drawKenBurns(img,prog){
+  const ir=img.width/img.height,cr=W/H;
+  let dw,dh;
+  if(ir>cr){dh=H;dw=H*ir;}else{dw=W;dh=W/ir;}
+  let scale=1,ox=0;
+  const amt=0.18;
+  if(sPhotoFx==='zoomin')scale=1+amt*prog;
+  else if(sPhotoFx==='zoomout')scale=1+amt*(1-prog);
+  else if(sPhotoFx==='panlr'){scale=1.15;ox=(prog-0.5)*W*0.12;}
+  else scale=1.02;
+  dw*=scale;dh*=scale;
+  ctx.save();ctx.globalAlpha=0.85;
+  ctx.drawImage(img,(W-dw)/2+ox,(H-dh)/2,dw,dh);
+  ctx.restore();
+}
+
+function drawOm(cx,cy,t,P){
+  const breathe=1+0.08*Math.sin(t*1.5);
+  const sz=(sShowCounter?78:104)*breathe;
+  ctx.save();
+  ctx.font=`900 ${sz}px 'Noto Sans Devanagari',serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle=P;ctx.shadowColor=P;ctx.shadowBlur=30+10*Math.sin(t*1.5);
+  ctx.fillText('ॐ',cx,cy);
+  ctx.restore();
+}
+function drawDeity(cx,cy,P){
+  ctx.save();
+  ctx.font=`700 30px 'Noto Sans Devanagari',serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle=gC(P,0.65);
+  ctx.fillText(sDeity,cx,cy);
+  ctx.restore();
+}
+
+function fxTransform(fx,k,t){
+  let scale=1,dy=0,alpha=1,blur=0;
+  if(fx==='slam'){const e=easeOutBack(clamp(k,0,1));scale=0.4+0.6*e;dy=20*(1-k);alpha=clamp(k*2.5,0,1);blur=6*(1-clamp(k*2,0,1));}
+  else if(fx==='fade'){alpha=clamp(k,0,1);scale=0.96+0.04*clamp(k,0,1);}
+  else if(fx==='zoom'){const e=easeOutBack(clamp(k,0,1));scale=0.1+0.9*e;alpha=clamp(k*2.5,0,1);blur=10*(1-clamp(k*1.5,0,1));}
+  else if(fx==='rise'){const e=easeOut(clamp(k,0,1));dy=70*(1-e);alpha=clamp(k*1.6,0,1);}
+  else if(fx==='fall'){const e=easeOut(clamp(k,0,1));dy=-70*(1-e);alpha=clamp(k*1.6,0,1);blur=4*(1-clamp(k*1.4,0,1));}
+  else if(fx==='divine'){const e=easeOut(clamp(k,0,1));scale=0.7+0.3*e+0.03*Math.sin(t*4);alpha=clamp(k*1.8,0,1);blur=8*(1-clamp(k*1.5,0,1));}
+  else if(fx==='flicker'){
+    // deterministic flicker from k
+    if(k<0.6){const ph=Math.floor(k*20);alpha=(ph%3===1)?0.25:1;}else alpha=1;
+  }
+  return{scale,dy,alpha,blur};
+}
+
+function drawMantra(cx,cy,t,inJap,curN,words,P,S){
+  const f=fsz();
+  ctx.save();
+  ctx.textAlign='center';ctx.textBaseline='middle';
+
+  if(sTextMode==='full'){
+    const k=clamp(inJap/0.3,0,1);
+    const tr=fxTransform(sTextFx,k,t);
+    ctx.globalAlpha=tr.alpha;
+    if(tr.blur>0.3)ctx.filter=`blur(${tr.blur}px)`;
+    ctx.translate(cx,cy+tr.dy);ctx.scale(tr.scale,tr.scale);
+    ctx.font=`800 ${f.mantra}px 'Noto Sans Devanagari',serif`;
+    ctx.fillStyle=P;ctx.shadowColor=P;ctx.shadowBlur=30;
+    wrapText(sMantra,0,0,W*0.85,f.mantra*1.35);
+  }
+  else if(sTextMode==='word'&&words.length>0){
+    const wordDur=1/words.length;
+    const wi=Math.min(words.length-1,Math.floor(inJap/wordDur));
+    const wp=(inJap-wi*wordDur)/wordDur;
+    const k=clamp(wp/0.4,0,1);
+    const w=words[wi]||'';
+    const sz=w.length>7?f.mantra*1.1:w.length>4?f.mantra*1.35:f.mantra*1.65;
+    const tr=fxTransform(sTextFx,k,t);
+    ctx.globalAlpha=tr.alpha;
+    if(tr.blur>0.3)ctx.filter=`blur(${tr.blur}px)`;
+    ctx.translate(cx,cy+tr.dy);ctx.scale(tr.scale,tr.scale);
+    ctx.font=`900 ${sz}px 'Noto Sans Devanagari',serif`;
+    ctx.fillStyle=P;ctx.shadowColor=P;ctx.shadowBlur=45;
+    ctx.fillText(w,0,0);
+  }
+  else if(words.length>0){ // build
+    const wordDur=1/(words.length+0.5);
+    const shown=Math.max(1,Math.min(words.length,Math.floor(inJap/wordDur)+1));
+    const baseSz=words.length>6?f.mantra*0.62:f.mantra*0.8;
+    ctx.font=`700 ${baseSz}px 'Noto Sans Devanagari',serif`;
+    const gap=baseSz*0.42;
+    const visible=words.slice(0,shown);
+    const widths=visible.map(w=>ctx.measureText(w).width);
+    let rows=[[]],rowW=[0];const maxW=W*0.86;
+    visible.forEach((w,i)=>{
+      const ww=widths[i];
+      if(rowW[rows.length-1]+ww+gap>maxW&&rows[rows.length-1].length>0){rows.push([]);rowW.push(0);}
+      rows[rows.length-1].push({w,i,ww});
+      rowW[rows.length-1]+=ww+gap;
+    });
+    const rowH=baseSz*1.4;
+    const startY=cy-(rows.length-1)*rowH/2;
+    rows.forEach((row,ri)=>{
+      const totW=row.reduce((a,r)=>a+r.ww+gap,0)-gap;
+      let x=cx-totW/2;
+      const y=startY+ri*rowH;
+      row.forEach(r=>{
+        const isNew=r.i===shown-1;
+        const wp=(inJap-(shown-1)*wordDur)/wordDur;
+        const k=isNew?clamp(wp/0.4,0,1):1;
+        ctx.save();
+        const sz2=isNew?baseSz*1.25:baseSz*0.9;
+        ctx.font=`${isNew?900:700} ${sz2}px 'Noto Sans Devanagari',serif`;
+        ctx.fillStyle=isNew?P:gC(P,0.45);
+        ctx.shadowColor=P;ctx.shadowBlur=isNew?40:10;
+        ctx.globalAlpha=isNew?clamp(k*1.5,0,1):1;
+        ctx.fillText(r.w,x+r.ww/2,y);
+        ctx.restore();
+        x+=r.ww+gap;
+      });
+    });
+  }
+  ctx.restore();
+  ctx.filter='none';
+}
+
+function wrapText(text,x,y,maxW,lineH){
+  const words=text.split(' ');let line='',lines=[];
+  for(const w of words){const test=line+w+' ';if(ctx.measureText(test).width>maxW&&line){lines.push(line);line=w+' ';}else line=test;}
+  lines.push(line);
+  const startY=y-(lines.length-1)*lineH/2;
+  lines.forEach((l,i)=>ctx.fillText(l.trim(),x,startY+i*lineH));
+}
+
+function drawRing(cx,cy,curN,total,inJap,P,S,t){
+  const R=200;
+  cy+=Math.sin(t*1.8)*8;
+  ctx.save();
+  ctx.strokeStyle=gC(P,0.16);ctx.lineWidth=22;
+  ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.stroke();
+  const prog=(curN+inJap)/total;
+  ctx.strokeStyle=P;ctx.lineWidth=22;ctx.lineCap='round';
+  ctx.shadowColor=P;ctx.shadowBlur=20;
+  ctx.beginPath();ctx.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+prog*Math.PI*2);ctx.stroke();
+  ctx.restore();
+  const maxDots=Math.min(total,54);
+  const step=total/maxDots;
+  for(let i=0;i<maxDots;i++){
+    const di=Math.floor(i*step);
+    const a=(di/total)*Math.PI*2-Math.PI/2;
+    const dx=cx+(R+52)*Math.cos(a),dy=cy+(R+52)*Math.sin(a);
+    const lit=di<=curN;
+    ctx.save();
+    ctx.fillStyle=lit?P:gC(P,0.22);
+    if(lit){ctx.shadowColor=P;ctx.shadowBlur=14;}
+    ctx.beginPath();ctx.arc(dx,dy,lit?12:7,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+}
+
+function drawCounterNumber(cx,cy,curN,total,inJap,P,t){
+  cy+=Math.sin(t*1.8)*8;
+  const f=fsz();
+  const pop=inJap<0.15?1+(0.28*(1-inJap/0.15)):1;
+  ctx.save();
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.font=`900 ${f.counter*pop}px 'Noto Sans Devanagari',serif`;
+  ctx.fillStyle=P;ctx.shadowColor=P;ctx.shadowBlur=30;
+  ctx.fillText(curN,cx,cy-26);
+  ctx.font=`400 46px 'Noto Sans Devanagari',serif`;
+  ctx.fillStyle=gC(P,0.55);ctx.shadowBlur=0;
+  ctx.fillText('/ '+total,cx,cy+f.counter*0.40);
+  ctx.font=`400 28px 'Noto Sans Devanagari',serif`;
+  ctx.fillStyle=gC(P,0.32);
+  ctx.fillText(lang().jap,cx,cy+f.counter*0.40+52);
+  ctx.restore();
+}
+
+function drawMala(cx,cy,malas,S){
+  ctx.save();
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.font=`700 38px 'Noto Sans Devanagari',serif`;
+  ctx.fillStyle=S;ctx.shadowColor=S;ctx.shadowBlur=16;
+  ctx.fillText(lang().mala+' × '+malas+' ✦',cx,cy);
+  ctx.restore();
+}
+
+function drawWatermark(P){
+  const pad=44;
+  let x,y,anchor;
+  if(sWmPos==='tl'){x=pad;y=pad+30;anchor='left';}
+  else if(sWmPos==='tr'){x=W-pad;y=pad+30;anchor='right';}
+  else if(sWmPos==='bl'){x=pad;y=H-190;anchor='left';}
+  else{x=W-pad;y=H-190;anchor='right';}
+  ctx.save();
+  if(logoObj){
+    const lh=66,lw=lh*(logoObj.width/logoObj.height);
+    const lx=anchor==='right'?x-lw:x;
+    ctx.globalAlpha=0.95;ctx.drawImage(logoObj,lx,y-lh/2,lw,lh);
+  }else{
+    ctx.textAlign=anchor;ctx.textBaseline='middle';
+    ctx.font=`700 32px 'Noto Sans Devanagari',serif`;
+    ctx.fillStyle=P;ctx.shadowColor='rgba(0,0,0,0.7)';ctx.shadowBlur=8;
+    ctx.fillText('🔯 विधि चक्र',x,y);
+    ctx.font=`400 19px monospace`;ctx.fillStyle=gC(P,0.55);
+    ctx.fillText('VIDHI CHAKRA',x,y+36);
+  }
+  ctx.restore();
+}
+
+function drawImgDots(idx,P){
+  const n=sImages.length,gap=16;
+  let widths=[];for(let i=0;i<n;i++)widths.push(i===idx?52:16);
+  const totalW=widths.reduce((a,b)=>a+b,0)+(n-1)*gap;
+  let x=(W-totalW)/2;const y=40;
+  for(let i=0;i<n;i++){
+    ctx.save();
+    ctx.fillStyle=i===idx?P:gC(P,0.3);
+    roundRect(x,y,widths[i],12,6);ctx.fill();
+    x+=widths[i]+gap;
+    ctx.restore();
+  }
+}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+
+function updateAndDrawPetals(t,P,S){
+  if(playing&&Math.random()<0.35&&petals.length<28){
+    petals.push({x:Math.random()*W,y:-30,vx:(Math.random()-0.5)*30,vy:90+Math.random()*70,rot:Math.random()*6,vr:(Math.random()-0.5)*3,size:15+Math.random()*11,color:Math.random()>0.5?gC(P,0.5):gC(S,0.45)});
+  }
+  const dt=1/60;
+  petals.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.rot+=p.vr*dt;});
+  petals=petals.filter(p=>p.y<H+40);
+  petals.forEach(p=>{
+    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);
+    ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.ellipse(0,0,p.size*0.5,p.size*0.8,0,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  });
+}
+
+// ═══════════ MP4 EXPORT (WebCodecs — proven method) ═══════════
+window._mp4Blob=null;
+
+function openExport(e){
+  if(e)e.stopPropagation();
+  pause();
+  const P=theme().p;
+  const jd=japDur();
+  const fullLoop=Math.ceil(jd*totalN());
+  const defDur=Math.min(60,Math.max(5,fullLoop));
+  el('export-overlay').innerHTML=`
+    <div onclick="event.stopPropagation()" style="background:#0d0800;border:1px solid ${gC(P,0.3)};border-radius:20px;padding:26px 22px;max-width:380px;width:100%;font-family:'Noto Sans Devanagari',serif">
+      <div style="text-align:center;margin-bottom:18px"><div style="font-size:32px;margin-bottom:6px">🎬</div><div style="color:${P};font-size:18px;font-weight:700">Export MP4</div></div>
+      <label style="color:${gC(P,0.45)};font-size:11px;letter-spacing:2px">DURATION — <span id="exp-dur-lbl" style="color:${P}">${defDur}s</span></label>
+      <input id="exp-dur" type="range" min="5" max="60" step="1" value="${defDur}" oninput="el('exp-dur-lbl').textContent=this.value+'s'" style="accent-color:${P};margin:8px 0 4px"/>
+      <div style="display:flex;justify-content:space-between;color:${gC(P,0.3)};font-size:11px;margin-bottom:18px"><span>5s</span><span>60s</span></div>
+      <div id="exp-status" style="display:none;text-align:center;margin-bottom:14px">
+        <div style="color:${P};font-size:14px;font-weight:700" id="exp-pct">Rendering... 0%</div>
+        <div style="height:6px;background:${gC(P,0.12)};border-radius:3px;margin-top:8px;overflow:hidden"><div id="exp-bar" style="height:100%;width:0%;background:${P};transition:width 0.2s"></div></div>
+        <div style="color:${gC(P,0.4)};font-size:11px;margin-top:6px">Keep this screen open</div>
+      </div>
+      <div id="exp-done" style="display:none;text-align:center;margin-bottom:14px">
+        <div style="color:#4ade80;font-size:14px;font-weight:700;margin-bottom:10px">✓ Video ready!</div>
+        <button onclick="saveMp4()" style="width:100%;background:linear-gradient(135deg,${dC(P)},${P},${dC(P)});color:#0d0800;border:none;border-radius:30px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit">📲 Save to Photos</button>
+        <div style="color:${gC(P,0.4)};font-size:11px;margin-top:8px">Share sheet → "Save Video"</div>
+      </div>
+      <div id="exp-buttons" style="display:flex;gap:10px">
+        <button onclick="closeExport()" style="flex:1;background:transparent;color:${gC(P,0.5)};border:1px solid ${gC(P,0.25)};border-radius:30px;padding:13px;font-size:14px;cursor:pointer;font-family:inherit">Cancel</button>
+        <button onclick="renderMp4()" style="flex:2;background:linear-gradient(135deg,${dC(P)},${P},${dC(P)});color:#0d0800;border:none;border-radius:30px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">🎬 Render</button>
+      </div>
+      <div style="color:${gC(P,0.3)};font-size:10px;text-align:center;margin-top:12px;line-height:1.6">This MP4 has visuals only (no audio track). For video WITH your mantra audio, use iPhone screen recording — tap ? for steps.</div>
+    </div>`;
+  el('export-overlay').style.display='flex';
+}
+function closeExport(){el('export-overlay').style.display='none';}
+
+async function renderMp4(){
+  if(typeof Mp4Muxer==='undefined'||!('VideoEncoder' in window)){
+    alert("MP4 export needs iPhone Safari (iOS 16.4+) or desktop Chrome.\n\nAlternatively use your phone's screen recorder.");
+    return;
+  }
+  const durSec=parseInt(el('exp-dur').value);
+  const FPS=30;
+  const totalFrames=durSec*FPS;
+  el('exp-buttons').style.display='none';
+  el('exp-status').style.display='block';
+  const wasPetals=petals;petals=[]; // deterministic export: no random petals mid-render... actually keep simple
+  try{
+    const muxer=new Mp4Muxer.Muxer({
+      target:new Mp4Muxer.ArrayBufferTarget(),
+      video:{codec:'avc',width:W,height:H},
+      fastStart:'in-memory'
+    });
+    const encoder=new VideoEncoder({
+      output:(chunk,meta)=>muxer.addVideoChunk(chunk,meta),
+      error:e=>{console.log('enc err',e);}
+    });
+    encoder.configure({codec:'avc1.640028',width:W,height:H,bitrate:8000000,framerate:FPS});
+    for(let i=0;i<totalFrames;i++){
+      const t=i/FPS;
+      drawFrame(t);
+      const frame=new VideoFrame(el('cv'),{timestamp:Math.round(i*1e6/FPS),duration:Math.round(1e6/FPS)});
+      encoder.encode(frame,{keyFrame:i%30===0});
+      frame.close();
+      if(i%3===0){
+        const pct=Math.round(i/totalFrames*100);
+        el('exp-pct').textContent='Rendering... '+pct+'%';
+        el('exp-bar').style.width=pct+'%';
+        await new Promise(r=>setTimeout(r,0));
+      }
+    }
+    el('exp-pct').textContent='Finalizing...';
+    await encoder.flush();
+    muxer.finalize();
+    window._mp4Blob=new Blob([muxer.target.buffer],{type:'video/mp4'});
+    el('exp-status').style.display='none';
+    el('exp-done').style.display='block';
+  }catch(err){
+    console.log(err);
+    alert('Render failed: '+err.message+'\nTry shorter duration.');
+    el('exp-status').style.display='none';
+    el('exp-buttons').style.display='flex';
+  }
+  petals=wasPetals;
+}
+
+async function saveMp4(){
+  if(!window._mp4Blob)return;
+  const file=new File([window._mp4Blob],'mantra-jap-vidhichakra.mp4',{type:'video/mp4'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file],title:'Mantra Jap'});}
+    catch(e){if(e.name!=='AbortError')downloadBlob();}
+  }else downloadBlob();
+}
+function downloadBlob(){
+  const url=URL.createObjectURL(window._mp4Blob);
+  const a=document.createElement('a');a.href=url;a.download='mantra-jap-vidhichakra.mp4';a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+// ═══════════ PLAYER CONTROLS ═══════════
+let pcTimer=null;
+function showPC(){el('player-controls').style.display='flex';clearTimeout(pcTimer);pcTimer=setTimeout(()=>{if(playing)el('player-controls').style.display='none';},4000);}
+function updatePCPlay(){const b=el('pc-play');if(b)b.textContent=playing?'⏸':'▶';}
+function exitPlayer(e){if(e)e.stopPropagation();pause();el('player').style.display='none';el('setup').style.display='flex';el('sticky-bar').style.display='flex';renderSetup();}
+
+function showGuide(e){
+  if(e)e.stopPropagation();pause();
+  const P=theme().p;
+  el('guide-modal').innerHTML=`
+    <div onclick="event.stopPropagation()" style="background:#0d0800;border:1px solid ${gC(P,0.3)};border-radius:20px;padding:26px 22px;max-width:380px;width:100%;font-family:'Noto Sans Devanagari',serif">
+      <div style="text-align:center;margin-bottom:16px"><div style="font-size:30px">📱</div><div style="color:${P};font-size:17px;font-weight:700;margin-top:6px">Two ways to save</div></div>
+      <div style="background:${gC(P,0.07)};border:1px solid ${gC(P,0.2)};border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="color:${P};font-size:13px;font-weight:700;margin-bottom:6px">📹 iPhone Screen Record — WITH audio ⭐</div>
+        <div style="color:${gC(P,0.6)};font-size:12px;line-height:1.7">1. Control Centre → ⏺ Screen Record<br/>2. Come back → tap ▶ play<br/>3. Mantra audio + counter perfectly synced<br/>4. Stop → MP4 in Photos → post!</div>
+      </div>
+      <div style="background:${gC(P,0.07)};border:1px solid ${gC(P,0.2)};border-radius:12px;padding:14px;margin-bottom:16px">
+        <div style="color:${P};font-size:13px;font-weight:700;margin-bottom:6px">⬇ Save MP4 button — video only</div>
+        <div style="color:${gC(P,0.6)};font-size:12px;line-height:1.7">Renders pixel-perfect MP4 (no audio track). Add your mantra audio in CapCut — since the counter timing matches the clip length exactly, drop the audio at 0:00 and it aligns.</div>
+      </div>
+      <button onclick="hideGuide()" style="width:100%;background:linear-gradient(135deg,${dC(P)},${P},${dC(P)});color:#0d0800;border:none;border-radius:30px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">Got it ✦</button>
+    </div>`;
+  el('guide-modal').style.display='flex';
+}
+function hideGuide(){el('guide-modal').style.display='none';}
+
+// player tap toggles play
+el('player').addEventListener('click',()=>{togglePlay();});
+
+// ═══════════ SETUP UI ═══════════
 function renderSetup(){
-  const t=getTheme(), P=t.p, S=t.s, lang=L[sLang];
-  const G=glowC(P), DG=glowC(P,0.18), LG=glowC(P,0.1), FG=glowC(P,0.04);
-  const PL=glowC(P,0.45), PM=glowC(P,0.3), PD=glowC(P,0.2);
+  const t=theme(),P=t.p,L=lang();
+  const G=gC(P),DG=gC(P,0.18),LG=gC(P,0.1),FG=gC(P,0.04),PL=gC(P,0.45),PM=gC(P,0.3),PD=gC(P,0.2);
+  const presets=savedPresets();
+  const estSec=estimateMantraSeconds(sMantra);
+  const audioSynced=!!(sAudioSrc&&sSyncPeriod>0.3);
 
   el("setup").innerHTML=`
-  <div style="display:flex;gap:0;margin-bottom:22px;border-radius:30px;overflow:hidden;border:1px solid ${glowC(P,0.25)}">
-    <button onclick="setLang('ne')" style="background:${sLang==='ne'?glowC(P,0.2):'transparent'};color:${sLang==='ne'?P:glowC(P,0.38)};border:none;padding:8px 24px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:${sLang==='ne'?700:400}">नेपाली</button>
-    <button onclick="setLang('hi')" style="background:${sLang==='hi'?glowC(P,0.2):'transparent'};color:${sLang==='hi'?P:glowC(P,0.38)};border:none;padding:8px 24px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:${sLang==='hi'?700:400}">हिन्दी</button>
+  <div style="display:flex;margin-bottom:22px;border-radius:30px;overflow:hidden;border:1px solid ${gC(P,0.25)}">
+    <button onclick="setLang('ne')" style="background:${sLang==='ne'?gC(P,0.2):'transparent'};color:${sLang==='ne'?P:gC(P,0.38)};border:none;padding:8px 24px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:${sLang==='ne'?700:400}">नेपाली</button>
+    <button onclick="setLang('hi')" style="background:${sLang==='hi'?gC(P,0.2):'transparent'};color:${sLang==='hi'?P:gC(P,0.38)};border:none;padding:8px 24px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:${sLang==='hi'?700:400}">हिन्दी</button>
   </div>
   <div style="text-align:center;margin-bottom:22px">
     <div style="font-size:46px;color:${P};line-height:1;margin-bottom:4px;text-shadow:0 0 20px ${G}">ॐ</div>
-    <div style="color:${P};font-size:18px;font-weight:700">${lang.title}</div>
-    <div style="color:${PM};font-size:10px;letter-spacing:4px;margin-top:3px">${lang.sub}</div>
+    <div style="color:${P};font-size:18px;font-weight:700">${L.title}</div>
+    <div style="color:${PM};font-size:10px;letter-spacing:4px;margin-top:3px">${L.sub}</div>
   </div>
-  <div class="card" style="background:${glowC(P,0.025)};border-color:${LG}">
+  <div class="card" style="background:${gC(P,0.025)};border:1px solid ${LG}">
 
-    <!-- COLOR -->
+    ${presets.length>0?`<div>
+      <label class="field-label" style="color:${PL}">💾 ${L.presetTitle}</label>
+      <div style="display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto">
+        ${presets.map((p,i)=>`<div class="preset-slot" style="border-color:${gC(P,0.2)};background:${gC(P,0.04)}"><div style="flex:1;overflow:hidden"><div style="color:${P};font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div><div style="color:${PM};font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.sMantra.slice(0,35)}</div></div><button onclick="loadPreset(${i})" style="background:${gC(P,0.18)};color:${P};border:1px solid ${gC(P,0.4)};border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:inherit;flex-shrink:0">${L.load}</button><button onclick="deletePreset(${i})" style="background:transparent;color:rgba(255,100,100,0.6);border:1px solid rgba(255,100,100,0.3);border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:12px;flex-shrink:0">✕</button></div>`).join('')}
+      </div>
+    </div>`:''}
+
     <div>
-      <label class="field-label" style="color:${PL}">${lang.colorTheme}</label>
+      <label class="field-label" style="color:${PL}">${L.colorTheme}</label>
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:${sThemeId==='custom'?12:0}px">
-        ${THEMES.map(th=>`
-          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer" onclick="setTheme('${th.id}')">
-            <div class="theme-dot" style="background:${th.id==='custom'?'conic-gradient(red,orange,yellow,green,cyan,blue,violet,red)':`linear-gradient(135deg,${th.p},${th.s})`};border-color:${sThemeId===th.id?'#fff':'transparent'};box-shadow:${sThemeId===th.id?`0 0 10px ${glowC(th.p||'#fff',0.6)}`:'none'}"></div>
-            <span style="color:${sThemeId===th.id?'#fff':glowC(P,0.4)};font-size:9px;letter-spacing:1px">${th.label.toUpperCase()}</span>
-          </div>
-        `).join('')}
+        ${THEMES.map(th=>`<div style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer" onclick="setTheme('${th.id}')"><div class="theme-dot" style="background:${th.id==='custom'?'conic-gradient(red,orange,yellow,green,cyan,blue,violet,red)':`linear-gradient(135deg,${th.p},${th.s})`};border-color:${sThemeId===th.id?'#fff':'transparent'};box-shadow:${sThemeId===th.id?`0 0 10px ${gC(th.p||'#fff',0.6)}`:'none'}"></div><span style="color:${sThemeId===th.id?'#fff':gC(P,0.4)};font-size:9px;letter-spacing:1px">${th.label.toUpperCase()}</span></div>`).join('')}
       </div>
-      ${sThemeId==='custom'?`<div style="display:flex;align-items:center;gap:12px">
-        <input type="color" value="${sCustomClr}" oninput="setCustomClr(this.value)" style="width:48px;height:36px;border:none;border-radius:8px;cursor:pointer;background:transparent;padding:2px"/>
-        <div><div style="color:${sCustomClr};font-size:14px;font-weight:600">${sCustomClr.toUpperCase()}</div><div style="color:rgba(255,255,255,0.3);font-size:11px">Pick any color</div></div>
-      </div>`:''}
+      ${sThemeId==='custom'?`<div style="display:flex;align-items:center;gap:12px"><input type="color" value="${sCustomClr}" oninput="setCustomClr(this.value)" style="width:48px;height:36px;border:none;border-radius:8px;cursor:pointer;background:transparent;padding:2px"/><div style="color:${sCustomClr};font-size:14px;font-weight:600">${sCustomClr.toUpperCase()}</div></div>`:''}
     </div>
 
-    <!-- TEXT MODE -->
     <div>
-      <label class="field-label" style="color:${PL}">${lang.textMode}</label>
-      ${TEXT_MODES.map(m=>`
-        <div class="mode-row" style="background:${sTextMode===m.id?glowC(P,0.12):'transparent'};border-color:${sTextMode===m.id?glowC(P,0.5):glowC(P,0.12)};margin-bottom:8px" onclick="setTextMode('${m.id}')">
-          <div class="radio-dot" style="border-color:${sTextMode===m.id?P:glowC(P,0.3)};background:${sTextMode===m.id?P:'transparent'}"></div>
-          <div>
-            <div style="color:${sTextMode===m.id?P:glowC(P,0.55)};font-size:13px;font-weight:700">${m.label}${m.id==='word'?' <span style="font-size:10px;background:'+glowC(P,0.1)+';padding:2px 8px;border-radius:10px;margin-left:6px">🔥 Best</span>':''}</div>
-            <div style="color:${PM};font-size:11px;margin-top:2px">${m.desc}</div>
-          </div>
-        </div>
-      `).join('')}
+      <label class="field-label" style="color:${PL}">${L.textMode}</label>
+      ${TEXT_MODES.map(m=>`<div class="mode-row" style="background:${sTextMode===m.id?gC(P,0.12):'transparent'};border:1px solid ${sTextMode===m.id?gC(P,0.5):gC(P,0.12)}" onclick="setTextMode('${m.id}')"><div class="radio-dot" style="border-color:${sTextMode===m.id?P:gC(P,0.3)};background:${sTextMode===m.id?P:'transparent'}"></div><div style="flex:1"><div style="color:${sTextMode===m.id?P:gC(P,0.55)};font-size:13px;font-weight:700">${m.label}${m.id==='word'?' 🔥':''}</div><div style="color:${PM};font-size:11px;margin-top:2px">${m.desc}</div></div></div>`).join('')}
     </div>
 
-    <!-- FONT SIZE -->
     <div>
-      <label class="field-label" style="color:${PL}">${lang.fontSize}</label>
-      <div style="display:flex;gap:8px">
-        ${FONT_SIZES.map(f=>`<button class="sz-btn" onclick="setFontSize('${f.id}')" style="color:${sFontSize===f.id?P:glowC(P,0.4)};border-color:${sFontSize===f.id?glowC(P,0.55):glowC(P,0.15)};background:${sFontSize===f.id?glowC(P,0.2):'transparent'};font-size:${f.id==='sm'?13:f.id==='md'?16:f.id==='lg'?19:23}px">${f.label}</button>`).join('')}
+      <label class="field-label" style="color:${PL}">${L.textFx}</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        ${TEXT_FX.map(f=>`<div class="fx-card" style="background:${sTextFx===f.id?gC(P,0.16):'transparent'};border-color:${sTextFx===f.id?gC(P,0.55):gC(P,0.13)}" onclick="setTextFx('${f.id}')"><div class="fx-icon">${f.icon}</div><div style="color:${sTextFx===f.id?P:gC(P,0.55)};font-size:12px;font-weight:700">${f.label}</div></div>`).join('')}
       </div>
     </div>
 
-    <!-- DEITY -->
     <div>
-      <label class="field-label" style="color:${PL}">${lang.deity}</label>
-      <input class="inp" id="inp-deity" value="${sDeity}" placeholder="${lang.deityPh}" oninput="sDeity=this.value"
-        style="background:${FG};border-color:${DG};color:${P}"/>
+      <label class="field-label" style="color:${PL}">${L.fontSize}</label>
+      <div style="display:flex;gap:8px">${FONT_SIZES.map(f=>`<button class="sz-btn" onclick="setFontSize('${f.id}')" style="color:${sFontSize===f.id?P:gC(P,0.4)};border:1px solid ${sFontSize===f.id?gC(P,0.55):gC(P,0.15)};background:${sFontSize===f.id?gC(P,0.2):'transparent'};font-size:${f.id==='sm'?13:f.id==='md'?16:f.id==='lg'?19:23}px">${f.label}</button>`).join('')}</div>
     </div>
 
-    <!-- MANTRA -->
+    <div class="option-row" style="border-top:1px solid ${gC(P,0.1)};padding-top:14px">
+      <div><div style="color:${P};font-size:13px;font-weight:700">🔢 ${L.showCounter}</div><div style="color:${gC(P,0.35)};font-size:11px;margin-top:3px">${L.showCounterHint}</div></div>
+      <div class="toggle-track" style="background:${sShowCounter?gC(P,0.3):gC(P,0.08)};border:1px solid ${sShowCounter?gC(P,0.6):gC(P,0.2)}" onclick="sShowCounter=!sShowCounter;renderSetup()"><div class="toggle-thumb" style="left:${sShowCounter?23:3}px;background:${sShowCounter?P:'rgba(255,255,255,0.2)'};box-shadow:${sShowCounter?`0 0 8px ${gC(P,0.8)}`:'none'}"></div></div>
+    </div>
+
+    <div><label class="field-label" style="color:${PL}">${L.deity}</label><input class="inp" id="inp-deity" value="${sDeity}" placeholder="${L.deityPh}" oninput="sDeity=this.value" style="background:${FG};border:1px solid ${DG};color:${P}"/></div>
+
     <div>
-      <label class="field-label" style="color:${PL}">${lang.mantra} <span style="color:#FF6B6B">*</span></label>
-      <textarea class="inp" id="inp-mantra" placeholder="${lang.mantraPh}" oninput="sMantra=this.value;updateGoBtn()"
-        style="background:${FG};border-color:${DG};color:${P}">${sMantra}</textarea>
+      <label class="field-label" style="color:${PL}">${L.mantra} <span style="color:#FF6B6B">*</span></label>
+      <textarea class="inp" id="inp-mantra" placeholder="${L.mantraPh}" oninput="sMantra=this.value;syncGoButtons()" style="background:${FG};border:1px solid ${DG};color:${P}">${sMantra}</textarea>
       <div style="margin-top:9px">
-        <div style="color:${PM};font-size:10px;letter-spacing:3px;margin-bottom:7px">${lang.presets}</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px">
-          ${PRESETS.map(p=>`<button class="preset-btn" onclick="setPreset('${p.mantra.replace(/'/g,"\\'")}',this)"
-            style="color:${sMantra===p.mantra?P:glowC(P,0.45)};border-color:${sMantra===p.mantra?glowC(P,0.55):glowC(P,0.15)};background:${sMantra===p.mantra?glowC(P,0.18):'transparent'}">${p.label}</button>`).join('')}
-        </div>
+        <div style="color:${PM};font-size:10px;letter-spacing:3px;margin-bottom:7px">${L.presets}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${PRESETS.map((p,pi)=>`<button class="preset-btn" onclick="setPresetByIndex(${pi})" style="color:${sMantra===p.mantra?P:gC(P,0.45)};border:1px solid ${sMantra===p.mantra?gC(P,0.55):gC(P,0.15)};background:${sMantra===p.mantra?gC(P,0.18):'transparent'}">${p.label}</button>`).join('')}</div>
       </div>
     </div>
 
-    <!-- IMAGES -->
+    <div style="border-top:1px solid ${gC(P,0.1)};padding-top:18px">
+      <label class="field-label" style="color:${PL}">🎵 Audio Sync Scanner <span style="background:rgba(74,222,128,0.14);color:#4ade80;padding:2px 8px;border-radius:10px;margin-left:6px;font-size:9px;letter-spacing:1px">NEW</span></label>
+      ${!sAudioSrc
+        ?`<div class="upload-zone" style="border:1px dashed ${gC(P,0.28)};background:${gC(P,0.02)}" onclick="el('file-audio').click()">
+            <div style="font-size:24px;margin-bottom:5px">🎵</div>
+            <div style="color:${gC(P,0.5)};font-size:13px">Upload your mantra / bhajan audio</div>
+            <div style="color:${gC(P,0.25)};font-size:11px;margin-top:3px">It will scan and find the gap between repetitions</div>
+          </div>`
+        :`<div style="display:flex;align-items:center;gap:10px;padding:11px;background:${gC(P,0.06)};border:1px solid ${gC(P,0.22)};border-radius:12px;margin-bottom:12px">
+            <div style="font-size:20px">🎵</div>
+            <div style="flex:1;overflow:hidden"><div style="color:${P};font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sAudioName}</div><div style="color:${gC(P,0.4)};font-size:10px">${sAudioDuration?sAudioDuration.toFixed(1)+'s total':''}</div></div>
+            <button onclick="clearAudio()" style="background:rgba(255,100,100,0.15);color:#FF6B6B;border:1px solid rgba(255,100,100,0.4);border-radius:20px;padding:5px 11px;font-size:11px;cursor:pointer;font-family:inherit">${L.audioRemove}</button>
+          </div>
+
+          ${anScanning
+            ?`<div style="text-align:center;padding:22px;background:${gC(P,0.04)};border-radius:12px">
+                <div style="color:${P};font-size:14px;font-weight:700">🔍 Scanning audio...</div>
+                <div style="color:${gC(P,0.4)};font-size:11px;margin-top:5px">Finding the gap between mantras</div>
+              </div>`
+            :anDone
+            ?`<div style="background:${gC(P,0.05)};border:1px solid ${gC(P,0.2)};border-radius:14px;padding:14px">
+                <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px">
+                  <div style="color:#4ade80;font-size:22px;font-weight:900">${sSyncPeriod.toFixed(2)}s</div>
+                  <div style="color:${gC(P,0.55)};font-size:12px">between each mantra</div>
+                </div>
+
+                <canvas id="wave-cv" style="width:100%;height:110px;border-radius:8px;display:block;margin-bottom:6px"></canvas>
+                <div style="color:${gC(P,0.35)};font-size:10px;line-height:1.5;margin-bottom:12px">
+                  Green line = first mantra · gold lines = each following mantra.<br/>They should sit on the loud peaks. Nudge below if they're off.
+                </div>
+
+                ${anCandidates.length>1?`
+                <div style="color:${gC(P,0.45)};font-size:10px;letter-spacing:2px;margin-bottom:6px">OTHER DETECTED RHYTHMS</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
+                  ${anCandidates.map(c=>`<button onclick="pickCandidate(${c.sec})" style="border-radius:16px;padding:5px 11px;font-size:11px;cursor:pointer;font-family:inherit;background:${Math.abs(c.sec-sSyncPeriod)<0.06?gC(P,0.2):'transparent'};color:${Math.abs(c.sec-sSyncPeriod)<0.06?P:gC(P,0.45)};border:1px solid ${Math.abs(c.sec-sSyncPeriod)<0.06?gC(P,0.5):gC(P,0.15)}">${c.sec.toFixed(2)}s</button>`).join('')}
+                </div>`:''}
+
+                <div style="color:${gC(P,0.45)};font-size:10px;letter-spacing:2px;margin-bottom:6px">FINE-TUNE GAP</div>
+                <div style="display:flex;gap:6px;align-items:center;margin-bottom:12px">
+                  <button onclick="nudgePeriod(-0.1)" style="flex:1;padding:9px 0;border-radius:8px;background:${gC(P,0.08)};color:${P};border:1px solid ${gC(P,0.25)};font-size:13px;cursor:pointer;font-family:inherit">−0.1</button>
+                  <button onclick="nudgePeriod(-0.01)" style="flex:1;padding:9px 0;border-radius:8px;background:${gC(P,0.08)};color:${P};border:1px solid ${gC(P,0.25)};font-size:13px;cursor:pointer;font-family:inherit">−0.01</button>
+                  <div style="flex:1.4;text-align:center;color:${P};font-size:14px;font-weight:700">${sSyncPeriod.toFixed(2)}s</div>
+                  <button onclick="nudgePeriod(0.01)" style="flex:1;padding:9px 0;border-radius:8px;background:${gC(P,0.08)};color:${P};border:1px solid ${gC(P,0.25)};font-size:13px;cursor:pointer;font-family:inherit">+0.01</button>
+                  <button onclick="nudgePeriod(0.1)" style="flex:1;padding:9px 0;border-radius:8px;background:${gC(P,0.08)};color:${P};border:1px solid ${gC(P,0.25)};font-size:13px;cursor:pointer;font-family:inherit">+0.1</button>
+                </div>
+
+                <div style="color:${gC(P,0.45)};font-size:10px;letter-spacing:2px;margin-bottom:6px">START POINT — <span style="color:${P}">${sSyncOffset.toFixed(2)}s</span></div>
+                <div style="display:flex;gap:6px;align-items:center;margin-bottom:14px">
+                  <button onclick="nudgeOffset(-0.05)" style="flex:1;padding:9px 0;border-radius:8px;background:${gC(P,0.08)};color:${P};border:1px solid ${gC(P,0.25)};font-size:13px;cursor:pointer;font-family:inherit">−0.05</button>
+                  <button onclick="nudgeOffset(0.05)" style="flex:1;padding:9px 0;border-radius:8px;background:${gC(P,0.08)};color:${P};border:1px solid ${gC(P,0.25)};font-size:13px;cursor:pointer;font-family:inherit">+0.05</button>
+                  <button onclick="repickOffset()" style="flex:2;padding:9px 0;border-radius:8px;background:${gC(P,0.08)};color:${P};border:1px solid ${gC(P,0.25)};font-size:12px;cursor:pointer;font-family:inherit">🎯 Auto</button>
+                </div>
+
+                <button id="test-btn" onclick="testSync()" style="width:100%;padding:13px;border-radius:12px;background:${gC(P,0.12)};color:${P};border:1px solid ${gC(P,0.4)};font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px">🔊 Test sync (audio + click)</button>
+                <div style="color:${gC(P,0.35)};font-size:11px;line-height:1.5;text-align:center">If each click lands exactly on the mantra, you're locked in.</div>
+
+                <div style="border-top:1px solid ${gC(P,0.1)};margin-top:14px;padding-top:12px">
+                  <div style="color:${gC(P,0.4)};font-size:10px;letter-spacing:2px;margin-bottom:7px">STILL OFF? TAP IT YOURSELF</div>
+                  <div style="display:flex;gap:6px">
+                    <button id="tap-btn" onclick="tapBeat()" style="flex:3;padding:11px;border-radius:10px;background:${gC(P,0.08)};color:${P};border:1px dashed ${gC(P,0.3)};font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">👆 Tap on each mantra</button>
+                    <button onclick="resetTaps()" style="flex:1;padding:11px;border-radius:10px;background:transparent;color:${gC(P,0.45)};border:1px solid ${gC(P,0.15)};font-size:12px;cursor:pointer;font-family:inherit">Reset</button>
+                  </div>
+                </div>
+              </div>`
+            :`<button onclick="scanAudio()" style="width:100%;padding:14px;border-radius:12px;background:${gC(P,0.12)};color:${P};border:1px solid ${gC(P,0.4)};font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">🔍 Scan audio for mantra rhythm</button>`}
+        `}
+      <input type="file" id="file-audio" accept="audio/*" style="display:none" onchange="handleAudioFile(this)"/>
+    </div>
+
     <div>
-      <label class="field-label" style="color:${PL}">${lang.images}</label>
-      <div class="upload-zone" style="border-color:${glowC(P,0.28)};background:${glowC(P,0.02)};margin-bottom:${sImages.length?12:0}px" onclick="el('file-imgs').click()">
-        <div style="font-size:24px;margin-bottom:5px">🖼️</div>
-        <div style="color:${glowC(P,0.5)};font-size:13px">${lang.imageHint}</div>
-        <div style="color:${glowC(P,0.25)};font-size:11px;margin-top:3px">JPG · PNG · WEBP — multiple ok</div>
-      </div>
+      <label class="field-label" style="color:${PL}">${L.images}</label>
+      <div class="upload-zone" style="border:1px dashed ${gC(P,0.28)};background:${gC(P,0.02)};margin-bottom:${sImages.length?12:0}px" onclick="el('file-imgs').click()"><div style="font-size:24px;margin-bottom:5px">🖼️</div><div style="color:${gC(P,0.5)};font-size:13px">${L.imageHint}</div><div style="color:${gC(P,0.25)};font-size:11px;margin-top:3px">JPG · PNG · WEBP</div></div>
       <input type="file" id="file-imgs" accept="image/*" multiple style="display:none" onchange="addImages(this)"/>
-      <div id="thumbs-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:${sImages.length?8:0}px">
-        ${sImages.map((src,i)=>`
-          <div class="img-thumb" style="border-color:${glowC(P,0.3)}">
-            <img src="${src}" alt=""/>
-            <div class="del-btn" onclick="removeImg(${i})">✕</div>
-            <div style="position:absolute;bottom:3px;left:0;right:0;text-align:center;font-size:10px;color:${glowC(P,0.8)}">${i+1}</div>
-          </div>`).join('')}
-        ${sImages.length?`<div class="add-btn" style="border-color:${glowC(P,0.25)};color:${glowC(P,0.4)}" onclick="el('file-imgs').click()">+</div>`:''}
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:${sImages.length?8:0}px">
+        ${sImages.map((src,i)=>`<div class="img-thumb" style="border:1px solid ${gC(P,0.3)}"><img src="${src}" alt=""/><div class="del-btn" onclick="removeImg(${i})">✕</div><div style="position:absolute;bottom:3px;left:0;right:0;text-align:center;font-size:10px;color:${gC(P,0.8)}">${i+1}</div></div>`).join('')}
+        ${sImages.length?`<div class="add-btn" style="border-color:${gC(P,0.25)};color:${gC(P,0.4)}" onclick="el('file-imgs').click()">+</div>`:''}
       </div>
-      ${sImages.length>1?`<div>
-        <div style="color:${PL};font-size:10px;letter-spacing:3px;margin-bottom:6px">${lang.imgSpeed} — <span id="imgint-lbl" style="color:${P}">${sImgInt}s</span></div>
+      ${sImages.length>0?`<div style="margin-top:6px">
+        <div style="color:${PL};font-size:10px;letter-spacing:3px;margin-bottom:8px">${L.photoFx}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${PHOTO_FX.map(pf=>`<button onclick="sPhotoFx='${pf.id}';renderSetup()" style="border-radius:18px;padding:6px 12px;font-size:11px;cursor:pointer;font-family:inherit;background:${sPhotoFx===pf.id?gC(P,0.18):'transparent'};color:${sPhotoFx===pf.id?P:gC(P,0.45)};border:1px solid ${sPhotoFx===pf.id?gC(P,0.55):gC(P,0.15)}">${pf.label}</button>`).join('')}</div>
+      </div>`:''}
+      ${sImages.length>1?`<div style="margin-top:12px">
+        <div style="color:${PL};font-size:10px;letter-spacing:3px;margin-bottom:6px">${L.imgSpeed} — <span id="imgint-lbl" style="color:${P}">${sImgInt}s</span></div>
         <input type="range" min="3" max="30" step="1" value="${sImgInt}" oninput="sImgInt=+this.value;el('imgint-lbl').textContent=sImgInt+'s'" style="accent-color:${P}"/>
-        <div style="display:flex;justify-content:space-between;color:${PM};font-size:11px;margin-top:4px"><span>⚡3s</span><span>🕉30s</span></div>
       </div>`:''}
     </div>
 
-    <!-- WATERMARK -->
-    <div style="border-top:1px solid ${glowC(P,0.1)};padding-top:18px">
+    <div style="border-top:1px solid ${gC(P,0.1)};padding-top:18px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;color:${P};font-size:13px;font-weight:700;letter-spacing:1px">🔯 विधि चक्र Watermark</div>
-      <label class="field-label" style="color:${PL}">${lang.logo}</label>
-      <div class="wm-zone" style="border-color:${glowC(P,0.28)};background:${glowC(P,0.02)};padding:${sLogoSrc?0:16}px ${sLogoSrc?0:14}px;margin-bottom:10px" onclick="el('file-logo').click()">
-        ${sLogoSrc
-          ?`<div style="position:relative"><img src="${sLogoSrc}" style="height:56px;object-fit:contain;display:block;margin:12px auto"/><div style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.7);border-radius:12px;padding:2px 10px;color:${glowC(P,0.75)};font-size:10px">tap to change</div></div>`
-          :`<div style="font-size:22px;margin-bottom:5px">🔯</div><div style="color:${glowC(P,0.45)};font-size:12px">${lang.logoHint}</div><div style="color:${PM};font-size:11px;margin-top:6px;border:1px solid ${PD};border-radius:20px;padding:5px 12px;display:inline-block">or use default text badge</div>`}
+      <label class="field-label" style="color:${PL}">${L.logo}</label>
+      <div class="wm-zone" style="border:1px dashed ${gC(P,0.28)};background:${gC(P,0.02)};padding:${sLogoSrc?0:16}px ${sLogoSrc?0:14}px;margin-bottom:10px" onclick="el('file-logo').click()">
+        ${sLogoSrc?`<div style="position:relative"><img src="${sLogoSrc}" style="height:56px;object-fit:contain;display:block;margin:12px auto"/><div style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.7);border-radius:12px;padding:2px 10px;color:${gC(P,0.75)};font-size:10px">tap to change</div></div>`:`<div style="font-size:22px;margin-bottom:5px">🔯</div><div style="color:${gC(P,0.45)};font-size:12px">${L.logoHint}</div><div style="color:${PM};font-size:11px;margin-top:6px;border:1px solid ${PD};border-radius:20px;padding:5px 12px;display:inline-block">or use default text badge</div>`}
       </div>
       <input type="file" id="file-logo" accept="image/*" style="display:none" onchange="setLogo(this)"/>
-      <label class="field-label" style="color:${PL};margin-top:12px">${lang.wmPos}</label>
-      <div style="display:flex;gap:8px">
-        ${WM_POS.map(p=>`<button onclick="sWmPos='${p.id}';renderSetup()" style="flex:1;padding:8px 0;border-radius:10px;background:${sWmPos===p.id?glowC(P,0.18):'transparent'};color:${sWmPos===p.id?P:glowC(P,0.4)};border:1px solid ${sWmPos===p.id?glowC(P,0.55):glowC(P,0.15)};font-size:16px;cursor:pointer">${p.label}</button>`).join('')}
-      </div>
+      <label class="field-label" style="color:${PL};margin-top:10px">${L.wmPos}</label>
+      <div style="display:flex;gap:8px">${WM_POS.map(p=>`<button onclick="sWmPos='${p.id}';renderSetup()" style="flex:1;padding:8px 0;border-radius:10px;background:${sWmPos===p.id?gC(P,0.18):'transparent'};color:${sWmPos===p.id?P:gC(P,0.4)};border:1px solid ${sWmPos===p.id?gC(P,0.55):gC(P,0.15)};font-size:16px;cursor:pointer">${p.label}</button>`).join('')}</div>
     </div>
 
-    <!-- COUNT -->
     <div>
-      <label class="field-label" style="color:${PL}">${lang.count}</label>
-      <div style="display:flex;gap:7px;margin-bottom:9px;flex-wrap:wrap">
-        ${[11,21,51,108].map(n=>`<button class="count-btn" onclick="setCount(${n})" style="color:${sCount===n&&!sCustom?P:glowC(P,0.4)};border-color:${sCount===n&&!sCustom?glowC(P,0.55):glowC(P,0.15)};background:${sCount===n&&!sCustom?glowC(P,0.18):'transparent'}">${n}</button>`).join('')}
-      </div>
-      <input class="inp" type="number" id="inp-custom" value="${sCustom}" placeholder="${lang.custom}" oninput="sCustom=this.value;renderSetup()"
-        style="background:${FG};border-color:${DG};color:${P};font-size:15px"/>
+      <label class="field-label" style="color:${PL}">${L.count}</label>
+      <div style="display:flex;gap:7px;margin-bottom:9px;flex-wrap:wrap">${[11,21,51,108].map(n=>`<button class="count-btn" onclick="setCount(${n})" style="color:${sCount===n&&!sCustom?P:gC(P,0.4)};border:1px solid ${sCount===n&&!sCustom?gC(P,0.55):gC(P,0.15)};background:${sCount===n&&!sCustom?gC(P,0.18):'transparent'}">${n}</button>`).join('')}</div>
+      <input class="inp" type="number" value="${sCustom}" placeholder="${L.custom}" oninput="sCustom=this.value" onchange="renderSetup()" style="background:${FG};border:1px solid ${DG};color:${P};font-size:15px"/>
     </div>
 
-    <!-- JAP SPEED -->
     <div>
-      <label class="field-label" style="color:${PL}">${lang.japSpeed} — <span id="speed-lbl" style="color:${P}">${sSpeed}s per jap</span></label>
-      <input type="range" min="2" max="15" step="1" value="${sSpeed}" oninput="sSpeed=+this.value;el('speed-lbl').textContent=sSpeed+'s per jap'" style="accent-color:${P}"/>
-      <div style="display:flex;justify-content:space-between;color:${PM};font-size:11px;margin-top:4px"><span>⚡2s</span><span>🕉15s</span></div>
+      <label class="field-label" style="color:${PL}">${L.japSpeed} — <span id="speed-lbl" style="color:${P}">${audioSynced?sSyncPeriod.toFixed(2):sSpeed}s per jap</span>${audioSynced?` <span style="background:rgba(74,222,128,0.12);color:#4ade80;padding:2px 8px;border-radius:8px;font-size:9px;margin-left:6px">🎵 LOCKED TO AUDIO</span>`:''}</label>
+      ${audioSynced
+        ?`<div style="color:${gC(P,0.45)};font-size:12px;line-height:1.6;padding:10px;background:${gC(P,0.04)};border-radius:10px">Locked to the rhythm found in your audio (${sSyncPeriod.toFixed(2)}s, starting at ${sSyncOffset.toFixed(2)}s). Adjust it in the Audio Sync Scanner above.</div>`
+        :`<input type="range" min="1" max="20" step="0.5" value="${sSpeed}" oninput="sSpeed=+this.value;el('speed-lbl').textContent=sSpeed+'s per jap'" style="accent-color:${P}"/>
+      <div style="display:flex;justify-content:space-between;color:${PM};font-size:11px;margin-top:4px"><span>⚡1s</span><span>🕉20s</span></div>
+      ${sMantra.trim()?`<button onclick="sSpeed=${estSec};renderSetup()" style="width:100%;margin-top:10px;padding:11px;background:${gC(P,0.1)};border:1px solid ${gC(P,0.35)};border-radius:10px;color:${P};font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">🧠 ${L.smartDetect}: ${estSec}s <span style="color:${gC(P,0.5)};font-weight:400">(from mantra length)</span></button>`:''}`}
     </div>
 
-    <!-- AUTO START -->
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="color:${PL};font-size:10px;letter-spacing:3px">${lang.autoStart}</div>
-        <div style="color:${glowC(P,0.25)};font-size:11px;margin-top:3px">${lang.autoHint}</div>
-      </div>
-      <div class="toggle-track" style="background:${sAuto?glowC(P,0.3):glowC(P,0.08)};border-color:${sAuto?glowC(P,0.6):glowC(P,0.2)}" onclick="sAuto=!sAuto;renderSetup()">
-        <div class="toggle-thumb" style="left:${sAuto?23:3}px;background:${sAuto?P:'rgba(255,255,255,0.2)'};box-shadow:${sAuto?`0 0 8px ${glowC(P,0.8)}`:'none'}"></div>
+    <div class="option-row">
+      <div><div style="color:${gC(P,0.5)};font-size:10px;letter-spacing:3px">${L.autoStart}</div><div style="color:${gC(P,0.25)};font-size:11px;margin-top:3px">${L.autoHint}</div></div>
+      <div class="toggle-track" style="background:${sAuto?gC(P,0.3):gC(P,0.08)};border:1px solid ${sAuto?gC(P,0.6):gC(P,0.2)}" onclick="sAuto=!sAuto;renderSetup()"><div class="toggle-thumb" style="left:${sAuto?23:3}px;background:${sAuto?P:'rgba(255,255,255,0.2)'};box-shadow:${sAuto?`0 0 8px ${gC(P,0.8)}`:'none'}"></div></div>
+    </div>
+
+    <div style="background:${gC(P,0.06)};border:1px solid ${gC(P,0.18)};border-radius:12px;padding:14px">
+      <div style="color:${P};font-size:13px;font-weight:700;margin-bottom:6px">📱 Save as video</div>
+      <div style="color:${gC(P,0.55)};font-size:12px;line-height:1.7">
+        <strong style="color:${P}">With audio:</strong> preview → iPhone Screen Record → stop → MP4 in Photos<br/>
+        <strong style="color:${P}">Video only:</strong> tap ⬇ Save MP4 on the preview → renders true MP4 → Save to Photos
       </div>
     </div>
 
-    <!-- GO -->
-    <button id="go-btn" class="go-btn" onclick="startCounter()"
-      style="background:${sMantra.trim()?`linear-gradient(135deg,${darkC(P)},${P},${darkC(P)})`:'rgba(255,255,255,0.06)'};color:${sMantra.trim()?'#0d0800':'rgba(255,255,255,0.2)'};cursor:${sMantra.trim()?'pointer':'not-allowed'};box-shadow:${sMantra.trim()?`0 0 40px ${glowC(P,0.3)}`:'none'}">
-      ${sMantra.trim()?lang.start:lang.enterMantra}
-    </button>
+    <div style="display:flex;gap:10px">
+      <button onclick="savePreset()" ${!sMantra.trim()?'disabled':''} style="flex:1;background:transparent;color:${sMantra.trim()?P:gC(P,0.2)};border:1px solid ${sMantra.trim()?gC(P,0.4):gC(P,0.1)};border-radius:40px;padding:14px;font-size:14px;font-weight:700;cursor:${sMantra.trim()?'pointer':'not-allowed'};font-family:inherit;letter-spacing:1px">💾 ${L.save}</button>
+    </div>
+
+    <button class="go-btn" onclick="startPlayer()" style="background:${sMantra.trim()?`linear-gradient(135deg,${dC(P)},${P},${dC(P)})`:'rgba(255,255,255,0.06)'};color:${sMantra.trim()?'#0d0800':'rgba(255,255,255,0.2)'};cursor:${sMantra.trim()?'pointer':'not-allowed'};box-shadow:${sMantra.trim()?`0 0 40px ${gC(P,0.3)}`:'none'}">${sMantra.trim()?'▶ '+L.start:L.enterMantra}</button>
   </div>`;
+
+  syncGoButtons();
+  if(anDone&&anEnv)requestAnimationFrame(()=>drawWaveform());
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// SETUP ACTIONS
-// ══════════════════════════════════════════════════════════════════════════════
+function syncGoButtons(){
+  const P=theme().p,L=lang();
+  const has=sMantra.trim().length>0;
+  const sb=el('sticky-bar'),sbtn=el('sticky-go');
+  sb.style.display='flex';
+  sbtn.textContent=has?'▶ '+L.start:L.enterMantra;
+  sbtn.style.background=has?`linear-gradient(135deg,${dC(P)},${P},${dC(P)})`:'rgba(120,120,120,0.5)';
+  sbtn.style.color=has?'#0d0800':'rgba(255,255,255,0.5)';
+  sbtn.style.cursor=has?'pointer':'not-allowed';
+  sbtn.style.boxShadow=has?`0 0 30px ${gC(P,0.4)}`:'none';
+}
+
 function setLang(l){sLang=l;renderSetup();}
 function setTheme(id){sThemeId=id;renderSetup();}
 function setCustomClr(v){sCustomClr=v;renderSetup();}
 function setTextMode(m){sTextMode=m;renderSetup();}
+function setTextFx(f){sTextFx=f;renderSetup();}
 function setFontSize(s){sFontSize=s;renderSetup();}
 function setCount(n){sCount=n;sCustom='';renderSetup();}
-function setPreset(m){sMantra=m;el('inp-mantra').value=m;renderSetup();}
-function updateGoBtn(){sMantra=el('inp-mantra').value;renderSetup();}
-async function addImages(inp){
-  const files=Array.from(inp.files);
-  const results=await Promise.all(files.map(b64));
-  sImages=[...sImages,...results];
-  renderSetup();
-}
-function removeImg(i){sImages=sImages.filter((_,j)=>j!==i);renderSetup();}
-async function setLogo(inp){
-  if(inp.files[0]){sLogoSrc=await b64(inp.files[0]);renderSetup();}
-}
+function setPresetByIndex(i){const p=PRESETS[i];if(!p)return;sMantra=p.mantra;const ta=el('inp-mantra');if(ta)ta.value=p.mantra;renderSetup();}
 
-// ══════════════════════════════════════════════════════════════════════════════
-// START COUNTER
-// ══════════════════════════════════════════════════════════════════════════════
-function startCounter(){
-  if(!sMantra.trim())return;
-  sDeity=el('inp-deity')?.value||sDeity;
-  sMantra=el('inp-mantra')?.value||sMantra;
-  const n=sCustom&&parseInt(sCustom)>0?parseInt(sCustom):sCount;
-
-  // Reset state
-  cRunning=false; cN=0; cMalas=0; cImgIdx=0; cPrevIdx=null; cCountdown=null;
-  cWords=sMantra.split(/\s+/).filter(Boolean);
-  cWordIdx=0; cShown=1;
-  clearAllTimers();
-
-  el("setup").style.display="none";
-  el("counter").style.display="flex";
-  applyThemeToCounter();
-  renderCounterUI();
-
-  if(sAuto){setRunning(true);}
-  else{showControls();}
-}
-
-function applyThemeToCounter(){
-  const t=getTheme(), P=t.p, S=t.s, lang=L[sLang];
-  const fs=getFS();
-  // Om
-  el('om-sym').style.color=P;
-  el('om-sym').style.filter=`drop-shadow(0 0 16px ${glowC(P,0.8)})`;
-  el('om-sym').style.animation='om-breathe-anim 4s ease-in-out infinite';
-  // Deity
-  if(sDeity){el('deity-lbl').style.display='block';el('deity-lbl').textContent=sDeity;el('deity-lbl').style.color=glowC(P,0.6);}
-  // Ring animation
-  el('ring-wrap').style.animation='ring-float 3.5s ease-in-out infinite';
-  // counter num
-  el('counter-num').style.fontSize=fs.counter+'px';
-  el('counter-num').style.color=P;
-  el('counter-num').style.textShadow=`0 0 28px ${glowC(P,0.95)},0 0 60px ${glowC(P,0.45)},0 2px 12px rgba(0,0,0,0.95)`;
-  el('counter-denom').style.color=glowC(P,0.55);
-  el('counter-jap').style.color=glowC(P,0.3);
-  el('counter-jap').textContent=lang.jap;
-  el('tap-hint').style.color=glowC(P,0.28);
-  el('tap-hint').textContent=lang.tapHint;
-  // Mala
-  el('mala-lbl').style.color=S;
-  el('mala-lbl').style.textShadow=`0 0 14px ${glowC(S,0.7)}`;
-  // Controls
-  el('play-btn').style.borderColor=glowC(P,0.4);
-  el('reset-btn').style.borderColor=glowC(P,0.22);
-  el('reset-btn').style.color=glowC(P,0.45);
-  el('settings-btn').style.borderColor=glowC(P,0.14);
-  el('settings-btn').style.color=glowC(P,0.3);
-  // Gradient
-  el('gradient').style.background='linear-gradient(to bottom,rgba(6,3,0,0.06) 0%,rgba(6,3,0,0.08) 40%,rgba(6,3,0,0.72) 65%,rgba(6,3,0,0.97) 100%)';
-  // Watermark
-  renderWatermark(P);
-  // bg images
-  if(sImages.length>0){el('bg-img-curr').src=sImages[0];el('bg-img-curr').style.opacity='0.82';}
-  renderImgDots();
-  // inject CSS for this theme
-  let style=document.getElementById('counter-css');
-  if(!style){style=document.createElement('style');style.id='counter-css';document.head.appendChild(style);}
-  style.textContent=`
-    @keyframes glow-pulse-c{0%,100%{text-shadow:0 0 18px ${P},0 0 45px ${glowC(P,0.5)};}50%{text-shadow:0 0 36px ${P},0 0 90px ${glowC(P,0.8)};}}
-    @keyframes om-breathe-anim{0%,100%{filter:drop-shadow(0 0 16px ${glowC(P,0.8)});transform:scale(1) translateY(0);}50%{filter:drop-shadow(0 0 34px ${P});transform:scale(1.08) translateY(-5px);}}
-  `;
-}
-
-function renderWatermark(P){
-  const wm=el('watermark');
-  const pos={tl:{top:'14px',left:'14px'},tr:{top:'14px',right:'14px'},bl:{bottom:'80px',left:'14px'},br:{bottom:'80px',right:'14px'}}[sWmPos]||{top:'14px',right:'14px'};
-  Object.assign(wm.style,{top:'',left:'',right:'',bottom:'',...pos,borderColor:glowC(P,0.3)});
-  wm.innerHTML=sLogoSrc
-    ?`<img src="${sLogoSrc}" style="height:26px;width:auto;max-width:90px;object-fit:contain"/>`
-    :`<span style="font-size:14px">🔯</span><div style="line-height:1"><div style="color:${P};font-size:11px;font-weight:700;letter-spacing:1px;font-family:inherit">विधि चक्र</div><div style="color:${glowC(P,0.55)};font-size:8px;letter-spacing:2px;font-family:monospace">VIDHI CHAKRA</div></div>`;
-}
-
-function renderImgDots(){
-  const P=getTheme().p;
-  el('img-dots').innerHTML='';
-  if(sImages.length>1){
-    sImages.forEach((_,i)=>{
-      const d=document.createElement('div');
-      d.className='img-dot';
-      d.style.width=(i===cImgIdx?20:6)+'px';
-      d.style.background=i===cImgIdx?P:glowC(P,0.3);
-      el('img-dots').appendChild(d);
-    });
-  }
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// COUNTER UI
-// ══════════════════════════════════════════════════════════════════════════════
-function renderCounterUI(){
-  const n=sCustom&&parseInt(sCustom)>0?parseInt(sCustom):sCount;
-  drawRing(cN,n);
-  el('counter-num').textContent=cN;
-  el('counter-denom').textContent='/ '+n;
-  if(cMalas>0){el('mala-lbl').style.display='block';el('mala-lbl').textContent=L[sLang].mala+' × '+cMalas+' ✦';}
-  renderMantraText(false);
-}
-
-function renderMantraText(animate){
-  const P=getTheme().p, S=getTheme().s, fs=getFS(), wrap=el('mantra-wrap');
-  const shadow=`0 2px 16px rgba(0,0,0,0.95),0 0 30px ${glowC(P,0.35)}`;
-
-  if(sTextMode==='full'){
-    wrap.innerHTML=`<div style="font-size:${fs.mantra}px;color:${P};line-height:1.65;letter-spacing:1px;font-weight:800;text-align:center;padding:0 8px;text-shadow:${shadow};${animate?'animation:full-pop 0.45s cubic-bezier(0.34,1.56,0.64,1)':''}">${sMantra}</div>`;
-  } else if(sTextMode==='word'){
-    const w=cWords[cWordIdx]||cWords[0]||'';
-    wrap.innerHTML=`<div style="font-size:${fs.mantra*1.55}px;font-weight:900;color:${P};line-height:1.2;letter-spacing:2px;text-shadow:0 0 40px ${glowC(P,0.9)},0 0 80px ${glowC(P,0.5)},0 3px 20px rgba(0,0,0,0.95);${animate?'animation:word-slam 0.35s cubic-bezier(0.34,1.56,0.64,1)':''}text-align:center;width:100%">${w}</div>`;
-  } else if(sTextMode==='build'){
-    const words=cWords;
-    wrap.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%;padding:0 12px">`+
-      words.slice(0,cShown).map((w,i)=>{
-        const isNew=i===cShown-1;
-        return `<span style="font-size:${isNew?fs.mantra*1.4:fs.mantra*0.95}px;font-weight:${isNew?900:700};color:${isNew?P:glowC(P,0.45)};letter-spacing:1px;text-shadow:${isNew?`0 0 35px ${glowC(P,0.9)},0 0 70px ${glowC(P,0.5)},0 3px 18px rgba(0,0,0,0.95)`:`0 2px 10px rgba(0,0,0,0.8)`};transition:all 0.4s;${isNew?'animation:build-new 0.35s cubic-bezier(0.34,1.56,0.64,1)':''}">${w}</span>`;
-      }).join('')+'</div>';
-  }
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// RING SVG
-// ══════════════════════════════════════════════════════════════════════════════
-function drawRing(current,total){
-  const P=getTheme().p, S=getTheme().s;
-  const R=78, ORB=106, DS=5.5, SZ=(ORB+DS+10)*2, C=SZ/2;
-  const circ=2*Math.PI*R, off=circ-(current/total)*circ;
-  const rsvg=el('ring-svg');
-  rsvg.setAttribute('width',SZ); rsvg.setAttribute('height',SZ);
-  rsvg.setAttribute('viewBox',`0 0 ${SZ} ${SZ}`);
-  rsvg.setAttribute('style','overflow:visible');
-
-  const dots=[...Array(total)].map((_,i)=>{
-    const a=((i/total)*360-90)*(Math.PI/180), lit=i<current;
-    const dx=C+ORB*Math.cos(a), dy=C+ORB*Math.sin(a);
-    return `<circle cx="${dx}" cy="${dy}" r="${lit?DS:DS*0.48}" fill="${lit?P:glowC(P,0.22)}" ${lit?'filter="url(#dg)"':''} style="transition:r 0.3s,fill 0.3s"/>`;
-  }).join('');
-
-  rsvg.innerHTML=`
-    <defs>
-      <linearGradient id="rG" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="${P}"/><stop offset="50%" stop-color="${S}"/><stop offset="100%" stop-color="${P}"/>
-      </linearGradient>
-      <filter id="ag" x="-25%" y="-25%" width="150%" height="150%">
-        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-      <filter id="dg" x="-150%" y="-150%" width="400%" height="400%">
-        <feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="${glowC(P,0.18)}" stroke-width="10"/>
-    <circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="url(#rG)" stroke-width="10" stroke-linecap="round"
-      stroke-dasharray="${circ}" stroke-dashoffset="${off}" transform="rotate(-90 ${C} ${C})" filter="url(#ag)"
-      style="transition:stroke-dashoffset 0.55s cubic-bezier(0.4,0,0.2,1)"/>
-    ${dots}`;
-  // position center label
-  el('ring-center').style.width=SZ+'px';
-  el('ring-center').style.height=SZ+'px';
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// RUNNING LOGIC
-// ══════════════════════════════════════════════════════════════════════════════
-function setRunning(val){
-  cRunning=val;
-  clearInterval(japTimer);
-  clearInterval(wordTimer);
-  clearInterval(buildTimer);
-
-  const n=sCustom&&parseInt(sCustom)>0?parseInt(sCustom):sCount;
-  const P=getTheme().p, S=getTheme().s;
-
-  if(val){
-    japTimer=setInterval(()=>{
-      cN++;
-      if(cN>=n){cN=0;cMalas++;spawnBurst();}
-      const num=el('counter-num');
-      num.style.animation='none'; num.offsetHeight;
-      num.style.animation='num-pop 0.42s cubic-bezier(0.34,1.56,0.64,1)';
-      num.textContent=cN;
-      el('counter-denom').textContent='/ '+n;
-      if(cMalas>0){el('mala-lbl').style.display='block';el('mala-lbl').textContent=L[sLang].mala+' × '+cMalas+' ✦';}
-      drawRing(cN,n);
-      cWordIdx=0; cShown=1;
-      renderMantraText(true);
-    }, sSpeed*1000);
-
-    // Word by word
-    if(sTextMode==='word'){
-      const interval=(sSpeed*1000)/cWords.length;
-      wordTimer=setInterval(()=>{cWordIdx=(cWordIdx+1)%cWords.length;renderMantraText(true);},interval);
-    }
-    // Build up
-    if(sTextMode==='build'){
-      const interval=(sSpeed*1000)/(cWords.length+1);
-      buildTimer=setInterval(()=>{
-        cShown++;
-        if(cShown>cWords.length){cShown=1;}
-        renderMantraText(true);
-      },interval);
-    }
-
-    spawnPetals();
-    el('rec-ind').style.display='flex';
-    el('tap-hint').style.display='none';
-  } else {
-    stopPetals();
-    el('rec-ind').style.display='none';
-  }
-
-  updatePlayBtn();
-}
-
-function updatePlayBtn(){
-  const P=getTheme().p, S=getTheme().s;
-  const btn=el('play-btn');
-  btn.textContent=cRunning?'⏸':'▶';
-  btn.style.background=cRunning?glowC(S,0.14):glowC(P,0.14);
-  btn.style.borderColor=cRunning?glowC(S,0.4):glowC(P,0.4);
-  btn.style.color=cRunning?S:P;
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// TAP / CONTROLS
-// ══════════════════════════════════════════════════════════════════════════════
-el('counter').addEventListener('click',()=>{
-  if(cCountdown!==null)return;
-  setRunning(!cRunning);
-  showControls();
-});
-el('play-btn').addEventListener('click',e=>{e.stopPropagation();setRunning(!cRunning);showControls();});
-
-function showControls(){
-  ctrlVisible=true;
-  el('controls').style.display='flex';
-  el('controls').style.animation='ctrl-in 0.3s ease-out';
-  el('tap-hint').style.display='none';
-  clearTimeout(ctrlTimer);
-  ctrlTimer=setTimeout(hideControls,3500);
-}
-function hideControls(){ctrlVisible=false;el('controls').style.display='none';if(!cRunning)el('tap-hint').style.display='block';}
-function resetCounter(e){
-  e.stopPropagation();
-  clearAllTimers();
-  cN=0;cMalas=0;cWordIdx=0;cShown=1;
-  setRunning(false);
-  const n=sCustom&&parseInt(sCustom)>0?parseInt(sCustom):sCount;
-  drawRing(0,n);
-  el('counter-num').textContent=0;
-  el('counter-denom').textContent='/ '+n;
-  el('mala-lbl').style.display='none';
-  renderMantraText(false);
-  showControls();
-}
-function goBack(e){
-  e.stopPropagation();
-  clearAllTimers();
-  setRunning(false);
-  el('counter').style.display='none';
-  el('setup').style.display='flex';
-  renderSetup();
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// RECORD MODE
-// ══════════════════════════════════════════════════════════════════════════════
-function startRecMode(e){
-  e.stopPropagation();
-  try{el('counter').requestFullscreen();}catch(_){}
-  hideControls();
-  clearAllTimers();
-  cRunning=false; cN=0; cMalas=0; cWordIdx=0; cShown=1;
-  const n=sCustom&&parseInt(sCustom)>0?parseInt(sCustom):sCount;
-  drawRing(0,n); el('counter-num').textContent=0; el('mala-lbl').style.display='none';
-
-  cCountdown=3;
-  const P=getTheme().p;
-  const ov=el('countdown-overlay');
-  ov.style.display='flex';
-  el('cd-num').textContent=cCountdown;
-  el('cd-num').style.color=P;
-  el('cd-num').style.textShadow=`0 0 60px ${glowC(P,0.9)}`;
-  el('cd-hint').style.color=glowC(P,0.6);
-
-  cdTimer=setInterval(()=>{
-    cCountdown--;
-    if(cCountdown<=0){
-      clearInterval(cdTimer); cdTimer=null; cCountdown=null;
-      ov.style.display='none';
-      setRunning(true);
-    } else {
-      const num=el('cd-num');
-      num.style.animation='none'; num.offsetHeight;
-      num.style.animation='cd-pop 1s ease-out forwards';
-      num.textContent=cCountdown;
-    }
-  },1000);
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// IMAGE CYCLING
-// ══════════════════════════════════════════════════════════════════════════════
-function startImgCycle(){
-  if(sImages.length<=1)return;
-  imgTimer=setInterval(()=>{
-    const prev=el('bg-img-prev'), curr=el('bg-img-curr');
-    cPrevIdx=cImgIdx;
-    cImgIdx=(cImgIdx+1)%sImages.length;
-    prev.src=sImages[cPrevIdx]; prev.style.opacity='0.82';
-    setTimeout(()=>{
-      curr.src=sImages[cImgIdx];
-      curr.style.opacity='0';
-      setTimeout(()=>{curr.style.opacity='0.82'; prev.style.opacity='0';},50);
-    },100);
-    renderImgDots();
-  },sImgInt*1000);
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// PETALS
-// ══════════════════════════════════════════════════════════════════════════════
-let petalInterval=null, petalEls=[];
-function spawnPetals(){
-  stopPetals();
-  const P=getTheme().p, S=getTheme().s;
-  const colors=[`rgba(255,80,80,0.62)`,`rgba(255,165,0,0.6)`,glowC(P,0.55),glowC(S,0.5)];
-  petalInterval=setInterval(()=>{
-    const petal=document.createElement('div');
-    petal.className='petal';
-    const i=Math.floor(Math.random()*7);
-    const w=7+(i%3)*2, h=12+(i%3)*3;
-    petal.style.cssText=`width:${w}px;height:${h}px;left:${Math.random()*90+5}%;background:${colors[i%colors.length]};animation:petal-fall ${2.6+i*0.65}s linear forwards`;
-    el('petals').appendChild(petal);
-    petalEls.push(petal);
-    setTimeout(()=>{petal.remove();petalEls=petalEls.filter(p=>p!==petal);},(2.6+i*0.65)*1000+100);
-  },700);
-}
-function stopPetals(){clearInterval(petalInterval);petalEls.forEach(p=>p.remove());petalEls=[];}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// BURST
-// ══════════════════════════════════════════════════════════════════════════════
-function spawnBurst(){
-  const P=getTheme().p;
-  const burst=document.createElement('div');
-  burst.style.cssText=`position:absolute;top:50%;left:50%;width:280px;height:280px;border-radius:50%;border:2.5px solid ${P};box-shadow:0 0 30px ${glowC(P,0.7)};animation:burst-ring 0.8s ease-out forwards;pointer-events:none;z-index:6`;
-  el('counter').appendChild(burst);
-  setTimeout(()=>burst.remove(),900);
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// UTILS
-// ══════════════════════════════════════════════════════════════════════════════
-function clearAllTimers(){
-  clearInterval(japTimer); clearInterval(imgTimer); clearInterval(cdTimer);
-  clearInterval(wordTimer); clearInterval(buildTimer);
-  clearTimeout(ctrlTimer);
-  japTimer=imgTimer=cdTimer=wordTimer=buildTimer=null;
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════════════════════════════════════
 renderSetup();
 
-// Start image cycle when counter becomes visible (observer)
-const obs=new MutationObserver(()=>{
-  if(el('counter').style.display!=='none'){startImgCycle();}
-  else{clearInterval(imgTimer);imgTimer=null;}
-});
-obs.observe(el('counter'),{attributes:true,attributeFilter:['style']});
 </script>
 </body>
 </html>
