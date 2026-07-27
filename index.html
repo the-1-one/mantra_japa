@@ -2034,6 +2034,8 @@ const STR={
 let sLang="ne",sMantra="",sDeity="",sCount=11,sCustom="",sImages=[],sLogoSrc=null;
 let sWmPos="tr",sSpeed=4,sImgInt=6,sAuto=true,sThemeId="gold",sCustomClr="#FFD700";
 let sTextMode="word",sFontSize="lg",sShowCounter=true,sTextFx="slam",sPhotoFx="zoomin";
+// ── Glow / lighting ──
+let sRays=true, sRayInt=0.55, sAura=true, sGlowStr=0.7, sSparkle=true, sPulse=true, sVignette=true;
 let sAudioSrc=null,sAudioName="",sAudioDuration=0;
 const imageObjs=[];
 let logoObj=null;
@@ -2481,6 +2483,8 @@ function loop(){
 // ═══════════ drawFrame(t): fully deterministic ═══════════
 function drawFrame(t){
   if(!ctx)return;
+  ctx.setTransform(1,0,0,1,0,0);       // guarantee a clean transform every frame
+  ctx.globalAlpha=1;ctx.filter='none';ctx.globalCompositeOperation='source-over';
   const T=theme(),P=T.p,S=T.s;
   const jd=japDur();
   const tAdj=Math.max(0,t-syncOffset());   // wait for the first mantra to begin
@@ -2511,6 +2515,13 @@ function drawFrame(t){
       }
     }
   }
+  // ── jap-synced pulse: everything breathes on each chant ──
+  const pulse = sPulse ? (1 + 0.16*Math.pow(1-clamp(inJap/0.30,0,1),2.2)) : 1;
+
+  // ── light BEHIND the subject (drawn under the darkening gradient) ──
+  drawAura(t,P,S,pulse);
+  drawGodRays(t,P,S,pulse);
+
   // gradient
   const grad=ctx.createLinearGradient(0,0,0,H);
   if(imageObjs.length>0){
@@ -2519,7 +2530,9 @@ function drawFrame(t){
   }else{grad.addColorStop(0,"rgba(10,5,0,0.4)");grad.addColorStop(1,"rgba(6,3,0,0.6)");}
   ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
 
+  drawVignette();
   updateAndDrawPetals(t,P,S);
+  drawSparkles(t,P,S);
 
   // mala completion burst
   if(japIndex>0&&curN===0&&japIndex!==lastBurstJap&&inJap<0.5){lastBurstJap=japIndex;}
@@ -2579,9 +2592,18 @@ function drawOm(cx,cy,t,P){
   const breathe=1+0.08*Math.sin(t*1.5);
   const sz=(sShowCounter?78:104)*breathe;
   ctx.save();
+  // soft halo behind the Om
+  ctx.globalCompositeOperation='lighter';
+  const g=ctx.createRadialGradient(cx,cy,2,cx,cy,sz*1.5);
+  g.addColorStop(0,gC(P,0.30*sGlowStr));
+  g.addColorStop(1,gC(P,0));
+  ctx.fillStyle=g;
+  ctx.beginPath();ctx.arc(cx,cy,sz*1.5,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+  ctx.save();
   ctx.font=`900 ${sz}px 'Noto Sans Devanagari',serif`;
   ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillStyle=P;ctx.shadowColor=P;ctx.shadowBlur=30+10*Math.sin(t*1.5);
+  ctx.fillStyle=P;ctx.shadowColor=P;ctx.shadowBlur=(30+10*Math.sin(t*1.5))*sGlowStr+12;
   ctx.fillText('ॐ',cx,cy);
   ctx.restore();
 }
@@ -2596,23 +2618,148 @@ function drawDeity(cx,cy,P){
 
 function fxTransform(fx,k,t){
   let scale=1,dy=0,alpha=1,blur=0;
-  if(fx==='slam'){const e=easeOutBack(clamp(k,0,1));scale=0.4+0.6*e;dy=20*(1-k);alpha=clamp(k*2.5,0,1);blur=6*(1-clamp(k*2,0,1));}
-  else if(fx==='fade'){alpha=clamp(k,0,1);scale=0.96+0.04*clamp(k,0,1);}
-  else if(fx==='zoom'){const e=easeOutBack(clamp(k,0,1));scale=0.1+0.9*e;alpha=clamp(k*2.5,0,1);blur=10*(1-clamp(k*1.5,0,1));}
-  else if(fx==='rise'){const e=easeOut(clamp(k,0,1));dy=70*(1-e);alpha=clamp(k*1.6,0,1);}
-  else if(fx==='fall'){const e=easeOut(clamp(k,0,1));dy=-70*(1-e);alpha=clamp(k*1.6,0,1);blur=4*(1-clamp(k*1.4,0,1));}
-  else if(fx==='divine'){const e=easeOut(clamp(k,0,1));scale=0.7+0.3*e+0.03*Math.sin(t*4);alpha=clamp(k*1.8,0,1);blur=8*(1-clamp(k*1.5,0,1));}
+  const K=clamp(k,0,1);
+  const eo=easeOut(K);
+  if(fx==='slam'){
+    // settle instead of snap: overshoot then ease home
+    const e=easeOutBack(K);
+    scale=0.62+0.38*e; dy=26*(1-eo); alpha=clamp(K*2.2,0,1); blur=5*(1-clamp(K*1.8,0,1));
+  }
+  else if(fx==='fade'){ alpha=eo; scale=0.985+0.015*eo; }
+  else if(fx==='zoom'){
+    scale=0.35+0.65*easeOutBack(K); alpha=clamp(K*2.4,0,1); blur=8*(1-clamp(K*1.6,0,1));
+  }
+  else if(fx==='rise'){ dy=56*(1-eo); alpha=clamp(K*1.7,0,1); blur=3*(1-clamp(K*1.6,0,1)); }
+  else if(fx==='fall'){ dy=-56*(1-eo); alpha=clamp(K*1.7,0,1); blur=3.5*(1-clamp(K*1.5,0,1)); }
+  else if(fx==='divine'){
+    // slow bloom in, then a gentle living float
+    scale=0.86+0.14*eo+0.012*Math.sin(t*2.2);
+    alpha=clamp(K*1.6,0,1);
+    blur=7*(1-clamp(K*1.4,0,1));
+    dy=-3*Math.sin(t*1.6);
+  }
   else if(fx==='flicker'){
-    // deterministic flicker from k
-    if(k<0.6){const ph=Math.floor(k*20);alpha=(ph%3===1)?0.25:1;}else alpha=1;
+    if(K<0.5){const ph=Math.floor(K*14);alpha=(ph%3===1)?0.35:1;}
+    else alpha=1;
+    scale=0.97+0.03*eo;
   }
   return{scale,dy,alpha,blur};
 }
 
+// ═══════════ GLOW / LIGHTING ═══════════
+// Radiating light beams from behind the deity
+function drawGodRays(t,P,S,pulse){
+  if(!sRays)return;
+  const cx=W/2, cy=H*0.33;
+  const N=22;
+  ctx.save();
+  ctx.globalCompositeOperation='lighter';
+  ctx.translate(cx,cy);
+  ctx.rotate(t*0.055);                       // slow majestic rotation
+  const len=H*0.95;
+  for(let i=0;i<N;i++){
+    const a=(i/N)*Math.PI*2;
+    // alternating long/short beams, breathing width
+    const wide=(i%2===0)?0.055:0.028;
+    const breathe=0.75+0.25*Math.sin(t*1.1+i*0.7);
+    const L=len*(i%2===0?1:0.72)*breathe;
+    const g=ctx.createLinearGradient(0,0,Math.cos(a)*L,Math.sin(a)*L);
+    g.addColorStop(0,gC(P,0.30*sRayInt*pulse));
+    g.addColorStop(0.35,gC(P,0.13*sRayInt*pulse));
+    g.addColorStop(1,gC(P,0));
+    ctx.fillStyle=g;
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.lineTo(Math.cos(a-wide)*L,Math.sin(a-wide)*L);
+    ctx.lineTo(Math.cos(a+wide)*L,Math.sin(a+wide)*L);
+    ctx.closePath();ctx.fill();
+  }
+  ctx.restore();
+}
+
+// Soft radial bloom behind the deity
+function drawAura(t,P,S,pulse){
+  if(!sAura)return;
+  const cx=W/2, cy=H*0.33;
+  const base=W*0.62, r=base*(0.94+0.09*Math.sin(t*0.9))*pulse;
+  ctx.save();
+  ctx.globalCompositeOperation='lighter';
+  const g=ctx.createRadialGradient(cx,cy,r*0.05,cx,cy,r);
+  g.addColorStop(0,gC(P,0.34*sGlowStr));
+  g.addColorStop(0.28,gC(P,0.16*sGlowStr));
+  g.addColorStop(0.62,gC(S,0.07*sGlowStr));
+  g.addColorStop(1,gC(P,0));
+  ctx.fillStyle=g;
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+
+// Floating sparkles / divine dust
+let sparks=[];
+function drawSparkles(t,P,S){
+  if(!sSparkle){sparks=[];return;}
+  if(playing&&sparks.length<55&&Math.random()<0.5){
+    sparks.push({
+      x:Math.random()*W, y:H+20,
+      vy:-(28+Math.random()*70),
+      vx:(Math.random()-0.5)*18,
+      r:1.6+Math.random()*3.6,
+      ph:Math.random()*6.28,
+      c:Math.random()>0.45?P:S,
+      life:0, max:5+Math.random()*5
+    });
+  }
+  const dt=1/60;
+  sparks.forEach(s=>{s.x+=s.vx*dt;s.y+=s.vy*dt;s.life+=dt;});
+  sparks=sparks.filter(s=>s.y>-30&&s.life<s.max);
+  ctx.save();
+  ctx.globalCompositeOperation='lighter';
+  sparks.forEach(s=>{
+    const fade=Math.min(1,s.life/0.6)*Math.max(0,1-s.life/s.max);
+    const tw=0.55+0.45*Math.sin(t*4+s.ph);
+    const a=fade*tw;
+    const g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*5);
+    g.addColorStop(0,gC(s.c,0.95*a));
+    g.addColorStop(0.4,gC(s.c,0.28*a));
+    g.addColorStop(1,gC(s.c,0));
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.arc(s.x,s.y,s.r*5,0,Math.PI*2);ctx.fill();
+  });
+  ctx.restore();
+}
+
+// Edge darkening so the centre pops
+function drawVignette(){
+  if(!sVignette)return;
+  ctx.save();
+  const g=ctx.createRadialGradient(W/2,H*0.45,W*0.25,W/2,H*0.45,H*0.72);
+  g.addColorStop(0,'rgba(0,0,0,0)');
+  g.addColorStop(0.65,'rgba(0,0,0,0.28)');
+  g.addColorStop(1,'rgba(0,0,0,0.72)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  ctx.restore();
+}
+
+// Fit text inside a max width by shrinking the font
+function fitFont(text,weight,startSize,maxW){
+  let s=startSize;
+  ctx.font=`${weight} ${s}px 'Noto Sans Devanagari',serif`;
+  let w=ctx.measureText(text).width;
+  let guard=0;
+  while(w>maxW&&s>16&&guard<80){
+    s*=Math.max(0.72,maxW/w);
+    ctx.font=`${weight} ${s}px 'Noto Sans Devanagari',serif`;
+    w=ctx.measureText(text).width;
+    guard++;
+  }
+  return s;
+}
+
 function drawMantra(cx,cy,t,inJap,curN,words,P,S){
   const f=fsz();
+  const MAXW=W*0.86;
   ctx.save();
-  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.textBaseline='middle';
 
   if(sTextMode==='full'){
     const k=clamp(inJap/0.3,0,1);
@@ -2620,9 +2767,10 @@ function drawMantra(cx,cy,t,inJap,curN,words,P,S){
     ctx.globalAlpha=tr.alpha;
     if(tr.blur>0.3)ctx.filter=`blur(${tr.blur}px)`;
     ctx.translate(cx,cy+tr.dy);ctx.scale(tr.scale,tr.scale);
+    ctx.textAlign='center';
     ctx.font=`800 ${f.mantra}px 'Noto Sans Devanagari',serif`;
-    ctx.fillStyle=P;ctx.shadowColor=P;ctx.shadowBlur=30;
-    wrapText(sMantra,0,0,W*0.85,f.mantra*1.35);
+    ctx.fillStyle=P;ctx.shadowColor=P;ctx.shadowBlur=30*sGlowStr+14;
+    wrapText(sMantra,0,0,MAXW/Math.max(0.35,tr.scale),f.mantra*1.35);
   }
   else if(sTextMode==='word'&&words.length>0){
     const wordDur=1/words.length;
@@ -2630,13 +2778,20 @@ function drawMantra(cx,cy,t,inJap,curN,words,P,S){
     const wp=(inJap-wi*wordDur)/wordDur;
     const k=clamp(wp/0.4,0,1);
     const w=words[wi]||'';
-    const sz=w.length>7?f.mantra*1.1:w.length>4?f.mantra*1.35:f.mantra*1.65;
+    const want=w.length>7?f.mantra*1.1:w.length>4?f.mantra*1.35:f.mantra*1.65;
     const tr=fxTransform(sTextFx,k,t);
+    // shrink to fit BEFORE the entrance scale so it can never run off-screen
+    const sz=fitFont(w,900,want,MAXW/Math.max(0.35,tr.scale));
     ctx.globalAlpha=tr.alpha;
     if(tr.blur>0.3)ctx.filter=`blur(${tr.blur}px)`;
     ctx.translate(cx,cy+tr.dy);ctx.scale(tr.scale,tr.scale);
+    ctx.textAlign='center';
     ctx.font=`900 ${sz}px 'Noto Sans Devanagari',serif`;
-    ctx.fillStyle=P;ctx.shadowColor=P;ctx.shadowBlur=45;
+    // layered glow for a richer look
+    ctx.shadowColor=P;ctx.shadowBlur=70*sGlowStr+20;
+    ctx.fillStyle=P;ctx.fillText(w,0,0);
+    ctx.shadowBlur=26*sGlowStr+8;ctx.fillText(w,0,0);
+    ctx.shadowBlur=0;ctx.fillStyle='#fff';ctx.globalAlpha=tr.alpha*0.30;
     ctx.fillText(w,0,0);
   }
   else if(words.length>0){ // build
@@ -2665,6 +2820,7 @@ function drawMantra(cx,cy,t,inJap,curN,words,P,S){
         const wp=(inJap-(shown-1)*wordDur)/wordDur;
         const k=isNew?clamp(wp/0.4,0,1):1;
         ctx.save();
+        ctx.textAlign='center';ctx.textBaseline='middle';
         const sz2=isNew?baseSz*1.25:baseSz*0.9;
         ctx.font=`${isNew?900:700} ${sz2}px 'Noto Sans Devanagari',serif`;
         ctx.fillStyle=isNew?P:gC(P,0.45);
@@ -2691,14 +2847,40 @@ function wrapText(text,x,y,maxW,lineH){
 function drawRing(cx,cy,curN,total,inJap,P,S,t){
   const R=200;
   cy+=Math.sin(t*1.8)*8;
+  const pop=sPulse?(1+0.10*Math.pow(1-clamp(inJap/0.25,0,1),2)):1;
+
+  // glowing halo behind the ring
+  ctx.save();
+  ctx.globalCompositeOperation='lighter';
+  const hg=ctx.createRadialGradient(cx,cy,R*0.25,cx,cy,R*1.85*pop);
+  hg.addColorStop(0,gC(P,0.26*sGlowStr));
+  hg.addColorStop(0.45,gC(P,0.10*sGlowStr));
+  hg.addColorStop(1,gC(P,0));
+  ctx.fillStyle=hg;
+  ctx.beginPath();ctx.arc(cx,cy,R*1.85*pop,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+
   ctx.save();
   ctx.strokeStyle=gC(P,0.16);ctx.lineWidth=22;
   ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.stroke();
   const prog=(curN+inJap)/total;
-  ctx.strokeStyle=P;ctx.lineWidth=22;ctx.lineCap='round';
-  ctx.shadowColor=P;ctx.shadowBlur=20;
+  // outer soft pass then crisp pass = real bloom
+  ctx.strokeStyle=P;ctx.lineCap='round';
+  ctx.shadowColor=P;ctx.shadowBlur=46*sGlowStr+10;
+  ctx.lineWidth=22;
   ctx.beginPath();ctx.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+prog*Math.PI*2);ctx.stroke();
+  ctx.shadowBlur=16*sGlowStr;
+  ctx.beginPath();ctx.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+prog*Math.PI*2);ctx.stroke();
+  // bright leading head
+  if(prog>0.001){
+    const a=-Math.PI/2+prog*Math.PI*2;
+    ctx.shadowBlur=34*sGlowStr+12;
+    ctx.fillStyle='#fff';ctx.globalAlpha=0.85;
+    ctx.beginPath();ctx.arc(cx+R*Math.cos(a),cy+R*Math.sin(a),11,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;
+  }
   ctx.restore();
+
   const maxDots=Math.min(total,54);
   const step=total/maxDots;
   for(let i=0;i<maxDots;i++){
@@ -2708,8 +2890,8 @@ function drawRing(cx,cy,curN,total,inJap,P,S,t){
     const lit=di<=curN;
     ctx.save();
     ctx.fillStyle=lit?P:gC(P,0.22);
-    if(lit){ctx.shadowColor=P;ctx.shadowBlur=14;}
-    ctx.beginPath();ctx.arc(dx,dy,lit?12:7,0,Math.PI*2);ctx.fill();
+    if(lit){ctx.shadowColor=P;ctx.shadowBlur=(14+10*sGlowStr);}
+    ctx.beginPath();ctx.arc(dx,dy,lit?12*(di===curN?pop:1):7,0,Math.PI*2);ctx.fill();
     ctx.restore();
   }
 }
@@ -2721,8 +2903,12 @@ function drawCounterNumber(cx,cy,curN,total,inJap,P,t){
   ctx.save();
   ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.font=`900 ${f.counter*pop}px 'Noto Sans Devanagari',serif`;
-  ctx.fillStyle=P;ctx.shadowColor=P;ctx.shadowBlur=30;
+  ctx.shadowColor=P;ctx.shadowBlur=60*sGlowStr+16;
+  ctx.fillStyle=P;ctx.fillText(curN,cx,cy-26);
+  ctx.shadowBlur=22*sGlowStr+6;ctx.fillText(curN,cx,cy-26);
+  ctx.shadowBlur=0;ctx.globalAlpha=0.32;ctx.fillStyle='#fff';
   ctx.fillText(curN,cx,cy-26);
+  ctx.globalAlpha=1;
   ctx.font=`400 46px 'Noto Sans Devanagari',serif`;
   ctx.fillStyle=gC(P,0.55);ctx.shadowBlur=0;
   ctx.fillText('/ '+total,cx,cy+f.counter*0.40);
@@ -2973,6 +3159,40 @@ function renderSetup(){
     <div>
       <label class="field-label" style="color:${PL}">${L.fontSize}</label>
       <div style="display:flex;gap:8px">${FONT_SIZES.map(f=>`<button class="sz-btn" onclick="setFontSize('${f.id}')" style="color:${sFontSize===f.id?P:gC(P,0.4)};border:1px solid ${sFontSize===f.id?gC(P,0.55):gC(P,0.15)};background:${sFontSize===f.id?gC(P,0.2):'transparent'};font-size:${f.id==='sm'?13:f.id==='md'?16:f.id==='lg'?19:23}px">${f.label}</button>`).join('')}</div>
+    </div>
+
+    <!-- GLOW & LIGHTING -->
+    <div style="border-top:1px solid ${gC(P,0.1)};padding-top:16px">
+      <label class="field-label" style="color:${PL}">✨ Glow & Lighting <span style="background:rgba(74,222,128,.14);color:#4ade80;padding:2px 8px;border-radius:10px;margin-left:6px;font-size:9px;letter-spacing:1px">NEW</span></label>
+      <div class="option-row" style="padding:9px 0">
+        <div><div style="color:${P};font-size:13px;font-weight:700">🔆 Light Rays</div><div style="color:${gC(P,0.33)};font-size:11px;margin-top:2px">Divine beams behind the deity</div></div>
+        <div class="toggle-track" style="background:${sRays?gC(P,0.3):gC(P,0.08)};border:1px solid ${sRays?gC(P,0.6):gC(P,0.2)}" onclick="sRays=!sRays;renderSetup()"><div class="toggle-thumb" style="left:${sRays?23:3}px;background:${sRays?P:'rgba(255,255,255,0.2)'}"></div></div>
+      </div>
+      ${sRays?`<div style="margin:2px 0 12px">
+        <div style="color:${gC(P,0.4)};font-size:10px;letter-spacing:2px;margin-bottom:5px">RAY STRENGTH — <span id="rayLbl" style="color:${P}">${Math.round(sRayInt*100)}%</span></div>
+        <input type="range" min="10" max="100" value="${Math.round(sRayInt*100)}" oninput="sRayInt=+this.value/100;el('rayLbl').textContent=this.value+'%'" style="accent-color:${P}"/>
+      </div>`:''}
+      <div class="option-row" style="padding:9px 0">
+        <div><div style="color:${P};font-size:13px;font-weight:700">🌟 Aura Bloom</div><div style="color:${gC(P,0.33)};font-size:11px;margin-top:2px">Halo of light around the deity</div></div>
+        <div class="toggle-track" style="background:${sAura?gC(P,0.3):gC(P,0.08)};border:1px solid ${sAura?gC(P,0.6):gC(P,0.2)}" onclick="sAura=!sAura;renderSetup()"><div class="toggle-thumb" style="left:${sAura?23:3}px;background:${sAura?P:'rgba(255,255,255,0.2)'}"></div></div>
+      </div>
+      <div class="option-row" style="padding:9px 0">
+        <div><div style="color:${P};font-size:13px;font-weight:700">💫 Sparkles</div><div style="color:${gC(P,0.33)};font-size:11px;margin-top:2px">Rising divine dust</div></div>
+        <div class="toggle-track" style="background:${sSparkle?gC(P,0.3):gC(P,0.08)};border:1px solid ${sSparkle?gC(P,0.6):gC(P,0.2)}" onclick="sSparkle=!sSparkle;renderSetup()"><div class="toggle-thumb" style="left:${sSparkle?23:3}px;background:${sSparkle?P:'rgba(255,255,255,0.2)'}"></div></div>
+      </div>
+      <div class="option-row" style="padding:9px 0">
+        <div><div style="color:${P};font-size:13px;font-weight:700">💓 Pulse On Each Jap</div><div style="color:${gC(P,0.33)};font-size:11px;margin-top:2px">Everything breathes with the chant</div></div>
+        <div class="toggle-track" style="background:${sPulse?gC(P,0.3):gC(P,0.08)};border:1px solid ${sPulse?gC(P,0.6):gC(P,0.2)}" onclick="sPulse=!sPulse;renderSetup()"><div class="toggle-thumb" style="left:${sPulse?23:3}px;background:${sPulse?P:'rgba(255,255,255,0.2)'}"></div></div>
+      </div>
+      <div class="option-row" style="padding:9px 0">
+        <div><div style="color:${P};font-size:13px;font-weight:700">🌑 Vignette</div><div style="color:${gC(P,0.33)};font-size:11px;margin-top:2px">Dark edges so the centre pops</div></div>
+        <div class="toggle-track" style="background:${sVignette?gC(P,0.3):gC(P,0.08)};border:1px solid ${sVignette?gC(P,0.6):gC(P,0.2)}" onclick="sVignette=!sVignette;renderSetup()"><div class="toggle-thumb" style="left:${sVignette?23:3}px;background:${sVignette?P:'rgba(255,255,255,0.2)'}"></div></div>
+      </div>
+      <div style="margin-top:8px">
+        <div style="color:${gC(P,0.4)};font-size:10px;letter-spacing:2px;margin-bottom:5px">OVERALL GLOW — <span id="glowLbl" style="color:${P}">${Math.round(sGlowStr*100)}%</span></div>
+        <input type="range" min="0" max="150" value="${Math.round(sGlowStr*100)}" oninput="sGlowStr=+this.value/100;el('glowLbl').textContent=this.value+'%'" style="accent-color:${P}"/>
+        <div style="display:flex;justify-content:space-between;color:${PM};font-size:11px;margin-top:3px"><span>subtle</span><span>intense</span></div>
+      </div>
     </div>
 
     <div class="option-row" style="border-top:1px solid ${gC(P,0.1)};padding-top:14px">
